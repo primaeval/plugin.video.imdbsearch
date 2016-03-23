@@ -1,0 +1,43 @@
+<settings>
+<category label="IMDB Advanced Title Search">
+
+	<setting label="Title" type="text" id="title" default=""/>
+
+	<setting label="Movie type" type="select" id="title_type" default="feature" values="Any|feature|tv_movie|tv_series|tv_episode|tv_special|mini_series|documentary|game|short|video"/>
+
+	<setting label="Year Start" type="slider" id="release_date_start" subsetting="true" default="2015" range="1900,1,2016" option="int" />
+	<setting label="Year End" type="slider" id="release_date_end" subsetting="true" default="2016" range="1900,1,2016" option="int" />
+
+	<setting label="User Rating Low" type="slider" id="user_rating_low" subsetting="true" default="6.0" range="0.0,0.1,10.0" option="float" />
+	<setting label="User Rating High" type="slider" id="user_rating_high" subsetting="true" default="10.0" range="0.0,0.1,10.0" option="float" />
+
+	<setting label="Votes Minimum" type="number" id="num_votes_low" default="100"/>
+	<setting label="Votes Maximum" type="number" id="num_votes_high" default=""/>
+
+	<setting label="Extra Genre" type="select" id="genres" values="Any|action|adventure|animation|biography|comedy|crime|documentary|drama|family|fantasy|film_noir|game_show|history|horror|music|musical|mystery|news|reality_tv|romance|sci_fi|sport|talk_show|thriller|war|western"/>
+
+	<setting label="Awards" type="select" id="groups" values="Any|top_100|top_250|top_1000|now-playing-us|oscar_winners|oscar_best_picture_winners|oscar_best_director_winners|oscar_nominees|emmy_winners|emmy_nominees|golden_globe_winners|golden_globe_nominees|razzie_winners|razzie_nominees|national_film_registry|bottom_100|bottom_250|bottom_1000"/>
+
+	<setting label="Company" type="select" id="companies" values="Any|fox|columbia|dreamworks|mgm|paramount|universal|disney|warner"/>
+
+	<setting label="Box Office Gross US Minimum" type="number" id="boxoffice_gross_us_low" default=""/>
+	<setting label="Box Office Gross US Maximum" type="number" id="boxoffice_gross_us_high" default=""/>
+
+	<setting label="Certificate" type="select" id="certificates" default="Any" values="Any|us:g|us:pg|us:pg_13|us:r|us:nc_17"/>
+	
+	<setting label="Country of Origin" type="select" id="countries" values="Any|ar|au|at|be|br|bg|ca|cn|co|cr|cz|dk|fi|fr|de|gr|hk|hu|is|in|ir|ie|it|jp|my|mx|nl|nz|pk|pl|pt|ro|ru|sg|za|es|se|ch|th|gb|us"/>
+
+	<setting label="Language" type="select" id="languages" default="en" values="Any|ar|bg|zh|hr|nl|en|fi|fr|de|el|he|hi|hu|is|it|ja|ko|no|fa|pl|pt|pa|ro|ru|es|sv|tr|uk"/>
+	
+	<setting label="Popularity Minimum" type="number" id="moviemeter_low" default=""/>
+	<setting label="Popularity Maximum" type="number" id="moviemeter_high" default=""/>
+	
+	<setting label="Production Status" type="select" id="production_status" default="released" values="Any|released|post_production|filming|pre_production|completed|script|optioned_property|announced|treatment_outline|pitch|turnaround|abandoned|delayed|indefinitely_delayed|active|unknown"/>
+	
+	<setting label="Runtime Minimum" type="number" id="runtime_low" default=""/>
+	<setting label="Runtime Maximum" type="number" id="runtime_high" default=""/>
+
+	<setting label="Sort" type="select" id="sort" default="alpha,asc" values="Any|moviemeter,asc|moviemeter,desc|alpha,asc|alpha,desc|user_rating,asc|user_rating,desc|num_votes,asc|num_votes,desc|boxoffice_gross_us,asc|boxoffice_gross_us,desc|runtime,asc|runtime,desc|year,asc|year,desc|release_date_us,asc|release_date_us,desc|my_ratings|my_ratings,asc"/>
+
+</category>
+</settings>
