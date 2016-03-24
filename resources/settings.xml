@@ -1,5 +1,7 @@
 <settings>
-<category label="IMDB Advanced Title Search">
+<category label="Title Search">
+
+	<setting label="Custom Prefix for adding to Favourites" type="text" id="prefix" default=""/>
 
 	<setting label="Title" type="text" id="title" default=""/>
 

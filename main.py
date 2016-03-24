@@ -116,44 +116,33 @@ def get_videos(url):
             'code': imdbID,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'certificate':certificate,'cast':cast,'runtime':runtime,'votes':votes})
 
-    u = urlparse.urlparse(url)
-    params = urlparse.parse_qs(u[4])
-    start = ''
     try:
         p = bs.find('span','pagination')
         a = p.find_all('a')
         last = a[-1]
         if last.string.startswith('Next'):
             next = last['href']
-            print "NEXT %s" % next
-            if 'start' in params:
-                start = int(params['start'][0])
-                start = start + _count
-            else:
-                start = 1 + _count
-        else:
-            start = ""
+            next_url = "http://www.imdb.com%s" % next
+            return (videos,next_url)
     except:
-        start = ""
-        
-    if start:
-        params['start'] = start
-    params = urllib.urlencode(params,doseq=True)
-    uu = list(u)
-    uu[4] = params
-    url = urlparse.urlunparse(uu)
-    return (videos,url,start)
+        pass
+
+    return (videos,'')
 
 
 def list_categories():
     categories = get_categories()
     listing = []
     for category in categories:
-        list_item = xbmcgui.ListItem(label=category)
-        list_item.setInfo('video', {'title': category, 'genre': category})
+        prefix = __settings__.getSetting( "prefix" )
+        if prefix:
+            name = "%s %s" % (prefix, category)
+        else:
+            name = category
+        list_item = xbmcgui.ListItem(label=name)
+        list_item.setInfo('video', {'title': name, 'genre': category})
         imdb_url=urllib.quote_plus(get_url(category,''))
         url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
-        print url
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -163,7 +152,7 @@ def list_categories():
 
 
 def list_videos(imdb_url):
-    (videos,imdb_url,start) = get_videos(imdb_url)
+    (videos,next_url) = get_videos(imdb_url)
     listing = []
     for video in videos:
         list_item = xbmcgui.ListItem(label=video['name'])
@@ -185,8 +174,8 @@ def list_videos(imdb_url):
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
 
     listing = []
-    if start:
-        url = '{0}?action=listing&imdb={1}'.format(_url, urllib.quote_plus(imdb_url))
+    if next_url:
+        url = '{0}?action=listing&imdb={1}'.format(_url, urllib.quote_plus(next_url))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
         list_item.setProperty('IsPlayable', 'true')
         list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png'})
@@ -208,13 +197,9 @@ def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
         if params['action'] == 'listing':
-
-
             if 'imdb' in params.keys():
                 imdb = params['imdb']
-            else:
-                imdb = ''
-            list_videos(urllib.unquote_plus(imdb))
+                list_videos(urllib.unquote_plus(imdb))
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
