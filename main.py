@@ -8,7 +8,7 @@ import xbmcplugin
 from bs4 import BeautifulSoup
 import requests
 import re
-import urllib
+import urllib,urlparse
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -44,14 +44,14 @@ def get_url(category,start):
     url = "http://www.imdb.com/search/title?"
     params = {}
     for (field, value) in imdb_query:
-        if not "Any" in value and value != "" and value != "," and value != "*":
+        if not "Any" in value and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
             params[field] = value
     params = urllib.urlencode(params)
-    url = "%s?%s" % (url,params)
+    url = "%s%s" % (url,params)
     return url
 
-def get_videos(category,start):
-    url = get_url(category,start)
+def get_videos(url):
+    #url = get_url(category,start)
     r = requests.get(url)
     bs = BeautifulSoup(r.text)
     videos = []
@@ -115,22 +115,34 @@ def get_videos(category,start):
             'video':'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID,
             'code': imdbID,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'certificate':certificate,'cast':cast,'runtime':runtime,'votes':votes})
-        
+
+    u = urlparse.urlparse(url)
+    params = urlparse.parse_qs(u[4])
+    start = ''
     try:
         p = bs.find('span','pagination')
         a = p.find_all('a')
         last = a[-1]
         if last.string.startswith('Next'):
-            #next = last['href']
-            if start:
-                start = int(start) + _count
+            next = last['href']
+            print "NEXT %s" % next
+            if 'start' in params:
+                start = int(params['start'][0])
+                start = start + _count
             else:
                 start = 1 + _count
         else:
             start = ""
     except:
         start = ""
-    return (videos,start)
+        
+    if start:
+        params['start'] = start
+    params = urllib.urlencode(params,doseq=True)
+    uu = list(u)
+    uu[4] = params
+    url = urlparse.urlunparse(uu)
+    return (videos,url,start)
 
 
 def list_categories():
@@ -139,8 +151,9 @@ def list_categories():
     for category in categories:
         list_item = xbmcgui.ListItem(label=category)
         list_item.setInfo('video', {'title': category, 'genre': category})
-        imdb_url=get_url(category,'')
+        imdb_url=urllib.quote_plus(get_url(category,''))
         url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
+        print url
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -149,8 +162,8 @@ def list_categories():
     xbmc.executebuiltin("Container.SetViewMode(50)")
 
 
-def list_videos(category,start):
-    (videos,start) = get_videos(category,start)
+def list_videos(imdb_url):
+    (videos,imdb_url,start) = get_videos(imdb_url)
     listing = []
     for video in videos:
         list_item = xbmcgui.ListItem(label=video['name'])
@@ -173,7 +186,7 @@ def list_videos(category,start):
 
     listing = []
     if start:
-        url = '{0}?action=listing&category={1}&start={2}'.format(_url, category, start)
+        url = '{0}?action=listing&imdb={1}'.format(_url, urllib.quote_plus(imdb_url))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
         list_item.setProperty('IsPlayable', 'true')
         list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png'})
@@ -195,15 +208,13 @@ def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
         if params['action'] == 'listing':
-            if 'start' in params.keys():
-                start = params['start']
+
+
+            if 'imdb' in params.keys():
+                imdb = params['imdb']
             else:
-                start = ''
-            if 'category' in params.keys():
-                category = params['category']
-            else:
-                category = ''
-            list_videos(category,start)
+                imdb = ''
+            list_videos(urllib.unquote_plus(imdb))
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
