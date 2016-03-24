@@ -8,6 +8,7 @@ import xbmcplugin
 from bs4 import BeautifulSoup
 import requests
 import re
+import urllib
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -19,9 +20,7 @@ def get_categories():
     'family','fantasy','film_noir','game_show','history','horror','music','musical','mystery','news',
     'reality_tv','romance','sci_fi','sport','talk_show','thriller','war','western']
 
-
-def get_videos(category,start):
-
+def get_url(category,start):
     imdb_query = [
     ("count", str(_count)),
     ("title", __settings__.getSetting( "title" )),
@@ -43,10 +42,16 @@ def get_videos(category,start):
     ("start", start),
     ]
     url = "http://www.imdb.com/search/title?"
+    params = {}
     for (field, value) in imdb_query:
         if not "Any" in value and value != "" and value != "," and value != "*":
-            url = "%s%s=%s&" % (url, field, value)
-    print "IMDB %s" % url
+            params[field] = value
+    params = urllib.urlencode(params)
+    url = "%s?%s" % (url,params)
+    return url
+
+def get_videos(category,start):
+    url = get_url(category,start)
     r = requests.get(url)
     bs = BeautifulSoup(r.text)
     videos = []
@@ -134,7 +139,8 @@ def list_categories():
     for category in categories:
         list_item = xbmcgui.ListItem(label=category)
         list_item.setInfo('video', {'title': category, 'genre': category})
-        url = '{0}?action=listing&category={1}'.format(_url, category)
+        imdb_url=get_url(category,'')
+        url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
