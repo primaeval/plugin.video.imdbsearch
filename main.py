@@ -53,7 +53,6 @@ def get_url(category,start):
     return url
 
 def get_videos(url):
-    #url = get_url(category,start)
     r = requests.get(url)
     bs = BeautifulSoup(r.text)
     videos = []
@@ -61,6 +60,10 @@ def get_videos(url):
 
         details = movie.find('td','title')
         title = details.find('a').contents[0]
+        try:
+            episode = details.find('span','episode').get_text()
+        except:
+            episode = ''
         try:
             genres = details.find('span','genre').findAll('a')
             genres = [g.contents[0] for g in genres]
@@ -72,7 +75,7 @@ def get_videos(url):
         except:
             runtime = ""
         try:
-            rating = details.find('span','value').contents[0]
+            rating = float(details.find('span','value').contents[0])
         except:
             rating = ""
         try:
@@ -85,6 +88,7 @@ def get_videos(url):
         try:
             year = details.find('span','year_type').contents[0][1:-1]
             year = year.split(' ')[0]
+            year = int(year)
         except:
             year = ''
         try:
@@ -113,8 +117,13 @@ def get_videos(url):
             img_url = ""
         
         if imdbID:
-            videos.append({'name':title,'thumb':img_url,'genre':",".join(genres),
-            'video':'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID,
+            if __settings__.getSetting( "title_type" ) == "tv_series":
+                #FUTURE meta_url = "plugin://plugin.video.meta/tv/imdb/%s" % imdbID
+                meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % title
+            else:
+                meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID
+            videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':",".join(genres),
+            'video':meta_url,
             'code': imdbID,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'certificate':certificate,'cast':cast,'runtime':runtime,'votes':votes})
 
@@ -137,10 +146,11 @@ def list_categories():
     listing = []
     for category in categories:
         prefix = __settings__.getSetting( "prefix" )
+        cat = re.sub('_',' ',category)
         if prefix:
-            name = "%s %s" % (prefix, re.sub('_',' ',category))
+            name = "%s %s" % (prefix, re.sub('_',' ',cat))
         else:
-            name = category
+            name = cat
         list_item = xbmcgui.ListItem(label=name)
         list_item.setInfo('video', {'title': name, 'genre': category})
         imdb_url=urllib.quote_plus(get_url(category,''))
@@ -150,22 +160,31 @@ def list_categories():
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.endOfDirectory(_handle)
-    #xbmc.executebuiltin("Container.SetViewMode(50)")
+    xbmc.executebuiltin("Container.SetViewMode(50)")
 
 
 def list_videos(imdb_url):
-    print imdb_url
     (videos,next_url) = get_videos(imdb_url)
+    if __settings__.getSetting( "title_type" ) == "tv_series":
+        IsPlayable = 'false'
+        is_folder = True
+    else:
+        IsPlayable = 'true'
+        is_folder = False
     listing = []
     for video in videos:
-        list_item = xbmcgui.ListItem(label=video['name'])
-        list_item.setInfo('video', {'title': video['name'], 'genre': video['genre'],'code': video['code'],
-        'year':int(video['year']),'mediatype':'movie','rating':float(video['rating']),'plot': video['plot'],
+        if __settings__.getSetting( "title_type" ) == "tv_episode":
+            vlabel = "%s (%s)" % (video['name'], video['episode'])
+        else:
+            vlabel = video['name']
+        list_item = xbmcgui.ListItem(label=vlabel)
+        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'],
+        'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
-        list_item.setProperty('IsPlayable', 'true')
+        list_item.setProperty('IsPlayable', IsPlayable)
         url = '{0}?action=play&video={1}'.format(_url, video['video'])
-        is_folder = False
+        is_folder = is_folder
         list_item.addContextMenuItems( [('Extended Info...', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code'])] ) 
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
@@ -194,8 +213,10 @@ def list_videos(imdb_url):
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_MPAA_RATING)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
     xbmcplugin.endOfDirectory(_handle)
-    xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "view" ))
-
+    if __settings__.getSetting( "title_type" ) == "tv_episode":
+        xbmc.executebuiltin("Container.SetViewMode(50)")
+    else:
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "view" ))
 
 def play_video(path):
     play_item = xbmcgui.ListItem(path=path)
