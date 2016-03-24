@@ -30,7 +30,7 @@ def get_videos(category,start):
     ("user_rating", "%.1f,%.1f" % (float(__settings__.getSetting( "user_rating_low" )),float(__settings__.getSetting( "user_rating_high" )))),
     ("num_votes", "%s,%s" % (__settings__.getSetting( "num_votes_low" ),__settings__.getSetting( "num_votes_high" ))),
     ("genres", "%s,%s" % (category,__settings__.getSetting( "genres" ))),   
-    ("groups", "%s,%s" % (category,__settings__.getSetting( "groups" ))),  
+    ("groups", "%s" % (__settings__.getSetting( "groups" ))),  
     ("companies", __settings__.getSetting( "companies" )),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
     ("certificates", __settings__.getSetting( "certificates" )),
@@ -46,7 +46,7 @@ def get_videos(category,start):
     for (field, value) in imdb_query:
         if not "Any" in value and value != "" and value != "," and value != "*":
             url = "%s%s=%s&" % (url, field, value)
-
+    print "IMDB %s" % url
     r = requests.get(url)
     bs = BeautifulSoup(r.text)
     videos = []
