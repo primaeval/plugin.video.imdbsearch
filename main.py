@@ -5,17 +5,19 @@ from urlparse import parse_qsl
 import xbmcgui
 import xbmcplugin
 import xbmcgui
+import sys
 
-
-from bs4 import BeautifulSoup
 import requests
 import re
 import urllib,urlparse
+import HTMLParser
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
 _count = 100
+
+
 
 def get_categories():
     return ['*','action','adventure','animation','biography','comedy','crime','documentary','drama',
@@ -53,93 +55,95 @@ def get_url(category,start):
     return url
 
 def get_videos(url):
+    print url
     r = requests.get(url)
-    bs = BeautifulSoup(r.text)
-    videos = []
-    for movie in bs.findAll('tr','detailed'):
 
-        details = movie.find('td','title')
-        title = details.find('a').contents[0]
-        try:
-            episode = details.find('span','episode').get_text()
-        except:
-            episode = ''
-        try:
-            genres = details.find('span','genre').findAll('a')
-            genres = [g.contents[0] for g in genres]
-        except:
-            genres = ""
-        try:
-            runtime = details.find('span','runtime').contents[0].split(' ')[0]
-            runtime = str(int(runtime)*60)
-        except:
-            runtime = ""
-        try:
-            rating = float(details.find('span','value').contents[0])
-        except:
-            rating = ""
-        try:
-            votes = details.find('div','user_rating').find('div','rating rating-list')['title']
-            match = re.search(r"\((.+?) votes\)", votes)
-            votes = match.group(1)
-            votes = re.sub(',','',votes)
-        except:
-            votes = ""
-        try:
-            year = details.find('span','year_type').contents[0][1:-1]
-            year = year.split(' ')[0]
-            year = int(year)
-        except:
-            year = ''
-        try:
-            imdbID = details.find('span','rating-cancel').a['href'].split('/')[2]
-        except:
-            imdbID = ""
-        try:
-            plot = details.find('span','outline').contents[0].get_text()
-        except:
-            plot = ''
-        try:
-            certificate = details.find('span','certificate').contents[0]['title']
-        except:
-            certificate = ''
-        try:
-            cast = details.find('span','credit').findAll('a')
-            cast = [g.contents[0].encode('latin-1') for g in cast]
-        except:
-            cast = []
-        try:
-            image = movie.find('td','image')
-            img = image.find('img')
-            src = img["src"]
-            img_url = re.sub(r'S[XY].*_.jpg','SX214_.jpg',src)
-        except:
-            img_url = ""
+    html = r.text
+    html = HTMLParser.HTMLParser().unescape(html)
+    
+    items = html.split('<tr class="')
+    videos = []
+    for item in items:
         
+        if not re.search(r'^.*?detailed"',item):
+            continue
+        
+        img_url = ''
+        img_match = re.search(r'<img src="(.*?)"', item)
+        if img_match:
+            img = img_match.group(1)
+            img_url = re.sub(r'S[XY].*_.jpg','SX214_.jpg',img)
+    
+        title = ''
+        imdbID = ''
+        year = ''
+        title_match = re.search(r'<a href="/title/(.+?)/" title="(.+?) \((.+?)\)"', item, flags=(re.DOTALL | re.MULTILINE))
+        if title_match:
+            imdbID = title_match.group(1)
+            title = title_match.group(2)
+            year = title_match.group(3)
+
+            
+        episode = ''
+        episode_match = re.search(r'<span class="episode">Episode: <a href="/title/(.+?)/">(.+?)</a>(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        if episode_match:
+            episode = "%s%s" % (episode_match.group(2), episode_match.group(3))
+            
+        rating = ''
+        votes = ''
+        rating_match = re.search(r'title="Users rated this (.+?)/10 \((.+?) votes\)', item, flags=(re.DOTALL | re.MULTILINE))
+        if rating_match:
+            rating = rating_match.group(1)
+            votes = rating_match.group(2)
+            votes = re.sub(',','',votes)
+            
+        plot = ''
+        plot_match = re.search(r'<span class="outline">(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        if plot_match:
+            plot = plot_match.group(1)
+            
+        cast = []
+        cast_match = re.search(r'<span class="credit">(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        if cast_match:
+            cast = cast_match.group(1)
+            cast_list = re.findall(r'<a.+?>(.+?)</a>', cast)
+            cast = cast_list
+                
+        genres = ''
+        genre_match = re.search(r'<span class="genre">(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        if genre_match:
+            genre = genre_match.group(1)
+            genre_list = re.findall(r'<a.+?>(.+?)</a>', genre)
+            genres = ",".join(genre_list)
+                
+        runtime = ''
+        runtime_match = re.search(r'<span class="runtime">(.+?) mins\.</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        if runtime_match:
+            runtime = int(runtime_match.group(1)) * 60
+                
+        certificate = ''
+        certificate_match = re.search(r'<span class="certificate"><span title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
+        if certificate_match:
+            certificate = certificate_match.group(1)
+            
         if imdbID:
             if __settings__.getSetting( "title_type" ) == "tv_series":
                 #FUTURE meta_url = "plugin://plugin.video.meta/tv/imdb/%s" % imdbID
                 meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % title
             else:
                 meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID
-            videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':",".join(genres),
+            videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':genres,
             'video':meta_url,
             'code': imdbID,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'certificate':certificate,'cast':cast,'runtime':runtime,'votes':votes})
-
-    try:
-        p = bs.find('span','pagination')
-        a = p.find_all('a')
-        last = a[-1]
-        if last.string.startswith('Next'):
-            next = last['href']
-            next_url = "http://www.imdb.com%s" % next
-            return (videos,next_url)
-    except:
-        pass
-
-    return (videos,'')
-
+            
+    next_url = ''
+    pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
+    if pagination_match:
+        next_url = "http://www.imdb.com%s" % pagination_match.group(1)
+            
+    return (videos,next_url)
+    
 
 def list_categories():
     categories = get_categories()
@@ -174,7 +178,7 @@ def list_videos(imdb_url):
     listing = []
     for video in videos:
         if __settings__.getSetting( "title_type" ) == "tv_episode":
-            vlabel = "%s (%s)" % (video['name'], video['episode'])
+            vlabel = "%s - %s" % (video['name'], video['episode'])
         else:
             vlabel = video['name']
         list_item = xbmcgui.ListItem(label=vlabel)
