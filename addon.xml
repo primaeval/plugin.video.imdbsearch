@@ -5,6 +5,8 @@ name="Advanced IMDb Search"
 provider-name="primaeval">
 <requires>
   <import addon="xbmc.python" version="2.24.0"/>
+  <import addon="script.module.beautifulsoup4"/> 
+  <import addon="script.module.requests" version="2.4.3" />
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
   <provides>video</provides>
