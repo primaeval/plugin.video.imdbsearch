@@ -42,4 +42,8 @@
 	<setting label="Sort" type="select" id="sort" default="alpha,asc" values="Any|moviemeter,asc|moviemeter,desc|alpha,asc|alpha,desc|user_rating,asc|user_rating,desc|num_votes,asc|num_votes,desc|boxoffice_gross_us,asc|boxoffice_gross_us,desc|runtime,asc|runtime,desc|year,asc|year,desc|release_date_us,asc|release_date_us,desc|my_ratings|my_ratings,asc"/>
 
 </category>
+<category label="Display">
+	<setting label="View Mode ID" type="number" id="view" default="500"/>
+</category>
+
 </settings>

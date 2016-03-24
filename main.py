@@ -4,6 +4,8 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.imdbsearch')
 from urlparse import parse_qsl
 import xbmcgui
 import xbmcplugin
+import xbmcgui
+
 
 from bs4 import BeautifulSoup
 import requests
@@ -90,7 +92,7 @@ def get_videos(url):
         except:
             imdbID = ""
         try:
-            plot = details.find('span','outline').contents[0]
+            plot = details.find('span','outline').contents[0].get_text()
         except:
             plot = ''
         try:
@@ -136,7 +138,7 @@ def list_categories():
     for category in categories:
         prefix = __settings__.getSetting( "prefix" )
         if prefix:
-            name = "%s %s" % (prefix, category)
+            name = "%s %s" % (prefix, re.sub('_',' ',category))
         else:
             name = category
         list_item = xbmcgui.ListItem(label=name)
@@ -148,10 +150,11 @@ def list_categories():
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.endOfDirectory(_handle)
-    xbmc.executebuiltin("Container.SetViewMode(50)")
+    #xbmc.executebuiltin("Container.SetViewMode(50)")
 
 
 def list_videos(imdb_url):
+    print imdb_url
     (videos,next_url) = get_videos(imdb_url)
     listing = []
     for video in videos:
@@ -184,8 +187,14 @@ def list_videos(imdb_url):
         xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
 
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RATING)
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_MPAA_RATING)
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
     xbmcplugin.endOfDirectory(_handle)
-    xbmc.executebuiltin("Container.SetViewMode(518)")
+    xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "view" ))
 
 
 def play_video(path):
