@@ -156,15 +156,16 @@ def list_categories():
         else:
             name = cat
         list_item = xbmcgui.ListItem(label=name)
-        list_item.setInfo('video', {'title': name, 'genre': category})
         imdb_url=urllib.quote_plus(get_url(category,''))
+        list_item.setInfo('video', {'title': name, 'genre': category, 'plot': re.sub('&',' ',urllib.unquote(urllib.unquote(imdb_url)))})
         url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+    xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-    xbmc.executebuiltin("Container.SetViewMode(50)")
+    xbmc.executebuiltin("Container.SetViewMode(504)")
 
 
 def list_videos(imdb_url):
