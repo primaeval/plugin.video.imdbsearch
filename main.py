@@ -55,7 +55,7 @@ def get_url(category,start):
     return url
 
 def get_videos(url):
-    print url
+    xbmc.log( url)
     r = requests.get(url)
 
     html = r.text
@@ -73,21 +73,26 @@ def get_videos(url):
         if img_match:
             img = img_match.group(1)
             img_url = re.sub(r'S[XY].*_.jpg','SX214_.jpg',img)
-    
+
         title = ''
         imdbID = ''
         year = ''
-        title_match = re.search(r'<a href="/title/(.+?)/" title="(.+?) \((.+?)\)"', item, flags=(re.DOTALL | re.MULTILINE))
+        title_match = re.search(r'<td class="title">.*?<a href="/title/(.+?)/">(.*?)</a>', item, flags=(re.DOTALL | re.MULTILINE))
         if title_match:
             imdbID = title_match.group(1)
             title = title_match.group(2)
+
+        title_match = re.search(r'<a href="/title/(.+?)/" title="(.+?) \((.+?)\)"', item, flags=(re.DOTALL | re.MULTILINE))
+        if title_match:
             year = title_match.group(3)
 
-            
         episode = ''
+        episode_id = ''
         episode_match = re.search(r'<span class="episode">Episode: <a href="/title/(.+?)/">(.+?)</a>(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
         if episode_match:
+            episode_id = episode_match.group(1)
             episode = "%s%s" % (episode_match.group(2), episode_match.group(3))
+            year = episode_match.group(3).strip('() ')
             
         rating = ''
         votes = ''
@@ -127,22 +132,57 @@ def get_videos(url):
             certificate = certificate_match.group(1)
             
         if imdbID:
-            if __settings__.getSetting( "title_type" ) == "tv_series":
-                #FUTURE meta_url = "plugin://plugin.video.meta/tv/imdb/%s" % imdbID
+            id = imdbID
+            title_type = __settings__.getSetting( "title_type" )
+            if title_type == "tv_series": 
                 meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % title
+            elif title_type == "tv_episode":
+                meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s" % (imdbID,episode_id)
+                id = episode_id
             else:
                 meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID
+
             videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':genres,
-            'video':meta_url,
-            'code': imdbID,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
+            'video':meta_url,'episode_id':episode_id,'imdb_id':imdbID,
+            'code': id,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'certificate':certificate,'cast':cast,'runtime':runtime,'votes':votes})
             
     next_url = ''
     pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
     if pagination_match:
         next_url = "http://akas.imdb.com%s" % pagination_match.group(1)
-            
+    xbmc.log(repr(videos))
     return (videos,next_url)
+
+def find_episode(imdb_id,episode_id):
+    xbmc.log("%s %s" % (imdb_id,episode_id))
+    
+    tvdb_url = "http://thetvdb.com//api/GetSeriesByRemoteID.php?imdbid=%s" % imdb_id
+    r = requests.get(tvdb_url)
+    tvdb_html = r.text
+    tvdb = ''
+    tvdb_match = re.search(r'<seriesid>(.*?)</seriesid>', tvdb_html, flags=(re.DOTALL | re.MULTILINE))
+    if tvdb_match:
+        tvdb_id = tvdb_match.group(1)
+        
+    episode_url = "http://akas.imdb.com/title/%s" % episode_id
+    r = requests.get(episode_url)
+    episode_html = r.text
+    episode_html = HTMLParser.HTMLParser().unescape(episode_html)
+    season = ''
+    episode = ''
+    season_match = re.search(r'<div class="bp_heading">Season ([0-9]*?) <span class="ghost">\|</span> Episode ([0-9]*?)</div>', episode_html, flags=(re.DOTALL | re.MULTILINE))
+    if season_match:
+        season = season_match.group(1)
+        episode = season_match.group(2)
+        
+    meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'default')
+    xbmc.log("%s %s %s" % (imdb_id,episode_id,meta_url))
+    list_item = xbmcgui.ListItem(label=meta_url)
+    list_item.setPath(meta_url)
+    list_item.setProperty("IsPlayable", "true")
+    list_item.setInfo(type='Video', infoLabels={'Title': meta_url})
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=list_item)
     
 
 def list_categories():
@@ -170,7 +210,8 @@ def list_categories():
 
 def list_videos(imdb_url):
     (videos,next_url) = get_videos(imdb_url)
-    if __settings__.getSetting( "title_type" ) == "tv_series":
+    title_type = __settings__.getSetting( "title_type" )
+    if title_type == "tv_series" : 
         IsPlayable = 'false'
         is_folder = True
     else:
@@ -178,7 +219,7 @@ def list_videos(imdb_url):
         is_folder = False
     listing = []
     for video in videos:
-        if __settings__.getSetting( "title_type" ) == "tv_episode":
+        if title_type == "tv_episode":
             vlabel = "%s - %s" % (video['name'], video['episode'])
         else:
             vlabel = video['name']
@@ -218,7 +259,8 @@ def list_videos(imdb_url):
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_MPAA_RATING)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
     xbmcplugin.endOfDirectory(_handle)
-    if __settings__.getSetting( "title_type" ) == "tv_episode":
+
+    if title_type == "tv_series" or title_type == "tv_episode":
         xbmc.executebuiltin("Container.SetViewMode(50)")
     else:
         xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "view" ))
@@ -235,6 +277,12 @@ def router(paramstring):
             if 'imdb' in params.keys():
                 imdb = params['imdb']
                 list_videos(urllib.unquote_plus(imdb))
+        if params['action'] == 'episode':
+            if 'imdb_id' in params.keys():
+                imdb_id = params['imdb_id']
+            if 'episode_id' in params.keys():
+                episode_id = params['episode_id']
+                find_episode(imdb_id,episode_id)
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
