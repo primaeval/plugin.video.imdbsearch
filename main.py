@@ -45,7 +45,7 @@ def get_url(category,start):
     ("sort", __settings__.getSetting( "sort" )),
     ("start", start),
     ]
-    url = "http://www.imdb.com/search/title?"
+    url = "http://akas.imdb.com/search/title?"
     params = {}
     for (field, value) in imdb_query:
         if not "Any" in value and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
@@ -140,7 +140,7 @@ def get_videos(url):
     next_url = ''
     pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
     if pagination_match:
-        next_url = "http://www.imdb.com%s" % pagination_match.group(1)
+        next_url = "http://akas.imdb.com%s" % pagination_match.group(1)
             
     return (videos,next_url)
     
