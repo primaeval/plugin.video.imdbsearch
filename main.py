@@ -15,9 +15,6 @@ import HTMLParser
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
-_count = 100
-
-
 
 def get_categories():
     return ['*','action','adventure','animation','biography','comedy','crime','documentary','drama',
@@ -26,7 +23,7 @@ def get_categories():
 
 def get_url(category,start):
     imdb_query = [
-    ("count", str(_count)),
+    ("count", __settings__.getSetting( "count" )),
     ("title", __settings__.getSetting( "title" )),
     ("title_type", __settings__.getSetting( "title_type" )),
     ("release_date", "%s,%s" % (__settings__.getSetting( "release_date_start" ),__settings__.getSetting( "release_date_end" ))),
@@ -45,7 +42,8 @@ def get_url(category,start):
     ("sort", __settings__.getSetting( "sort" )),
     ("start", start),
     ]
-    url = "http://akas.imdb.com/search/title?"
+    server = __settings__.getSetting( "server" )
+    url = "http://%s.imdb.com/search/title?" % server
     params = {}
     for (field, value) in imdb_query:
         if not "Any" in value and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
@@ -55,9 +53,7 @@ def get_url(category,start):
     return url
 
 def get_videos(url):
-    xbmc.log( url)
     r = requests.get(url)
-
     html = r.text
     html = HTMLParser.HTMLParser().unescape(html)
     
@@ -134,8 +130,8 @@ def get_videos(url):
         if imdbID:
             id = imdbID
             title_type = __settings__.getSetting( "title_type" )
-            if title_type == "tv_series": 
-                meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % title
+            if title_type == "tv_series" or title_type == "mini_series": 
+                meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % re.sub(' ','+',title)
             elif title_type == "tv_episode":
                 meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s" % (imdbID,episode_id)
                 id = episode_id
@@ -150,13 +146,12 @@ def get_videos(url):
     next_url = ''
     pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
     if pagination_match:
-        next_url = "http://akas.imdb.com%s" % pagination_match.group(1)
-    xbmc.log(repr(videos))
+        server = __settings__.getSetting( "server" )
+        next_url = "http://%s.imdb.com%s" % (server,pagination_match.group(1))
+        
     return (videos,next_url)
 
 def find_episode(imdb_id,episode_id):
-    xbmc.log("%s %s" % (imdb_id,episode_id))
-    
     tvdb_url = "http://thetvdb.com//api/GetSeriesByRemoteID.php?imdbid=%s" % imdb_id
     r = requests.get(tvdb_url)
     tvdb_html = r.text
@@ -164,20 +159,21 @@ def find_episode(imdb_id,episode_id):
     tvdb_match = re.search(r'<seriesid>(.*?)</seriesid>', tvdb_html, flags=(re.DOTALL | re.MULTILINE))
     if tvdb_match:
         tvdb_id = tvdb_match.group(1)
-        
-    episode_url = "http://akas.imdb.com/title/%s" % episode_id
+
+    server = __settings__.getSetting( "server" )
+    episode_url = "http://%s.imdb.com/title/%s" % (server,episode_id)
     r = requests.get(episode_url)
     episode_html = r.text
     episode_html = HTMLParser.HTMLParser().unescape(episode_html)
     season = ''
     episode = ''
-    season_match = re.search(r'<div class="bp_heading">Season ([0-9]*?) <span class="ghost">\|</span> Episode ([0-9]*?)</div>', episode_html, flags=(re.DOTALL | re.MULTILINE))
+    season_match = re.search(r'<div class="bp_heading">Season ([0-9]*?) <span class="ghost">\|</span> Episode ([0-9]*?)</div>', 
+    episode_html, flags=(re.DOTALL | re.MULTILINE))
     if season_match:
         season = season_match.group(1)
         episode = season_match.group(2)
         
     meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'default')
-    xbmc.log("%s %s %s" % (imdb_id,episode_id,meta_url))
     list_item = xbmcgui.ListItem(label=meta_url)
     list_item.setPath(meta_url)
     list_item.setProperty("IsPlayable", "true")
@@ -205,15 +201,18 @@ def list_categories():
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-    xbmc.executebuiltin("Container.SetViewMode(504)")
+    xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "index_view" ))
 
 
 def list_videos(imdb_url):
     (videos,next_url) = get_videos(imdb_url)
     title_type = __settings__.getSetting( "title_type" )
-    if title_type == "tv_series" : 
+    if title_type == "tv_series" or title_type == "mini_series": 
         IsPlayable = 'false'
         is_folder = True
+    elif title_type == "game": 
+        IsPlayable = 'false'
+        is_folder = False
     else:
         IsPlayable = 'true'
         is_folder = False
@@ -229,7 +228,6 @@ def list_videos(imdb_url):
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
         list_item.setProperty('IsPlayable', IsPlayable)
-        url = '{0}?action=play&video={1}'.format(_url, video['video'])
         is_folder = is_folder
         list_item.addContextMenuItems( [('Extended Info...', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code'])] ) 
         video_streaminfo = {'codec': 'h264'}
@@ -238,7 +236,11 @@ def list_videos(imdb_url):
         video_streaminfo['height'] = 720
         list_item.addStreamInfo('video', video_streaminfo)
         list_item.addStreamInfo('audio', {'codec': 'aac', 'language': 'en', 'channels': 2})
-        listing.append((video['video'], list_item, is_folder))
+        if title_type == "game": 
+            here_url = "%s%s" % (sys.argv[0],sys.argv[2])
+            listing.append((here_url, list_item, is_folder))
+        else:
+            listing.append((video['video'], list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
 
     listing = []
@@ -260,10 +262,10 @@ def list_videos(imdb_url):
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
     xbmcplugin.endOfDirectory(_handle)
 
-    if title_type == "tv_series" or title_type == "tv_episode":
-        xbmc.executebuiltin("Container.SetViewMode(50)")
+    if title_type == "tv_episode":
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "tv_view" ))
     else:
-        xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "view" ))
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "video_view" ))
 
 def play_video(path):
     play_item = xbmcgui.ListItem(path=path)

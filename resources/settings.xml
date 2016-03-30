@@ -4,8 +4,11 @@
 	<setting label="Custom Prefix for adding to Favourites" type="text" id="prefix" default=""/>
 
 	<setting label="Title" type="text" id="title" default=""/>
+	
+	<setting label="IMDb Server" type="select" id="server" default="www" values="akas|www"/>
+	<setting label="Results Per Page" type="select" id="count" default="50" values="50|100"/>
 
-	<setting label="Type" type="select" id="title_type" default="feature" values="Any|feature|tv_movie|tv_series|tv_episode|tv_special|mini_series|documentary|game|short|video"/>
+	<setting label="Type" type="select" id="title_type" default="feature" values="feature|tv_movie|tv_series|tv_episode|tv_special|mini_series|documentary|game|short|video"/>
 
 	<setting label="Year Start" type="slider" id="release_date_start" subsetting="true" default="2015" range="1900,1,2016" option="int" />
 	<setting label="Year End" type="slider" id="release_date_end" subsetting="true" default="2016" range="1900,1,2016" option="int" />
@@ -43,7 +46,9 @@
 
 </category>
 <category label="Display">
-	<setting label="View Mode ID" type="number" id="view" default="500"/>
+	<setting label="Category View Mode ID" type="number" id="index_view" default="504"/>
+	<setting label="TV Episode View Mode ID" type="number" id="tv_view" default="50"/>
+	<setting label="Default View Mode ID" type="number" id="video_view" default="500"/>
 </category>
 
 </settings>
