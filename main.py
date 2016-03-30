@@ -28,7 +28,7 @@ title_type_dict = {'Feature':'feature',
 'Short':'short',
 'Video':'video'}
 
-languages_dict = {"Any":"",
+languages_dict = {"Any":"*",
 "Arabic":"ar",
 "Bulgarian":"bg",
 "Chinese":"zh",
@@ -341,7 +341,7 @@ languages_dict = {"Any":"",
 "Yoruba":"yo",
 "Zulu":"zu"}
 
-countries_dict = {"Any":"",
+countries_dict = {"Any":"*",
 "Argentina":"ar",
 "Australia":"au",
 "Austria":"at",
