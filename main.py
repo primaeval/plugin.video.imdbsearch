@@ -48,9 +48,9 @@ def get_url(category,start):
     for (field, value) in imdb_query:
         if not "Any" in value and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
             params[field] = value
-    params = urllib.urlencode(params)
-    url = "%s%s" % (url,params)
-    return url
+    params_url = urllib.urlencode(params)
+    url = "%s%s" % (url,params_url)
+    return (url,params)
 
 def get_videos(url):
     r = requests.get(url)
@@ -192,8 +192,13 @@ def list_categories():
         else:
             name = cat
         list_item = xbmcgui.ListItem(label=name)
-        imdb_url=urllib.quote_plus(get_url(category,''))
-        list_item.setInfo('video', {'title': name, 'genre': category, 'plot': re.sub('&',' ',urllib.unquote(urllib.unquote(imdb_url)))})
+        (url,params) = get_url(category,'')
+        imdb_url=urllib.quote_plus(url)
+        plot = ""
+        params['server'] = __settings__.getSetting( "server" )
+        for param in params:
+            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
+        list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
         url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
         is_folder = True
         listing.append((url, list_item, is_folder))

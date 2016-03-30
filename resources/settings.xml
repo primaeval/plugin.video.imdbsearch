@@ -32,7 +32,7 @@
 	
 	<setting label="Country of Origin" type="select" id="countries" values="Any|ar|au|at|be|br|bg|ca|cn|co|cr|cz|dk|fi|fr|de|gr|hk|hu|is|in|ir|ie|it|jp|my|mx|nl|nz|pk|pl|pt|ro|ru|sg|za|es|se|ch|th|gb|us"/>
 
-	<setting label="Language" type="select" id="languages" default="en" values="Any|ar|bg|zh|hr|nl|en|fi|fr|de|el|he|hi|hu|is|it|ja|ko|no|fa|pl|pt|pa|ro|ru|es|sv|tr|uk"/>
+	<setting label="Language" type="select" id="languages" default="en" values="Any|ar|bg|zh|hr|nl|en|fi|fr|de|el|he|hi|hu|is|it|ja|ko|no|fa|pl|pt|pa|ro|ru|es|sv|tr|uk|ab|qac|guq|qam|af|qas|ak|sq|alg|ase|am|apa|an|arc|arp|hy|as|aii|ath|asf|awa|ay|az|ast|qbd|ban|bm|eu|bsc|be|bem|bn|ber|bho|qbi|qbh|bs|bzs|br|bfi|my|yue|ca|km|qax|ce|chr|chy|hne|kw|co|cr|mus|qal|crp|cro|cs|da|prs|dso|din|qaw|doi|dyu|dz|qbc|frs|egy|eo|et|ee|qbg|fo|fil|qbn|fon|fsl|ff|fvr|gd|gl|ka|gsg|grb|grc|kl|gn|gu|gnn|gup|ht|hak|bgc|qav|ha|haw|hmn|qab|hop|iba|qag|icl|ins|id|iu|ik|ga|jsl|dyo|ktz|qbf|kea|kab|xal|kn|kpj|mjw|kar|kk|kca|kha|ki|rw|qar|tlh|kfa|kok|kvk|khe|qaq|kro|kyw|qbb|ku|kwk|ky|lbj|lad|lo|la|lv|lif|ln|lt|nds|lb|mk|qbm|mag|mai|mg|ms|ml|pqm|qap|mt|mnc|cmn|man|mni|mi|arn|mr|mh|mas|mls|myn|men|mic|enm|nan|min|mwl|lus|moh|mn|moe|qaf|mfe|qbl|nah|qba|nv|nbf|nd|nap|yrk|ne|ncg|zxx|non|nai|qbk|nyk|ny|oc|oj|qaz|ang|or|pap|qaj|ps|paw|qai|qah|fuf|tsz|qu|qya|raj|qbj|rm|rom|rtm|rsl|qao|qae|sm|sa|sc|qay|sr|qbo|srr|qad|qau|sn|shh|scn|sjn|sd|si|sio|sk|sl|so|son|snk|wen|st|qbe|ssp|srn|sw|gsw|syl|tl|tg|tmh|ta|tac|tt|te|qak|th|bo|qan|tli|tpi|to|ts|tsc|tn|tcy|tup|tk|tyv|tzo|qat|ur|uz|vi|qaa|was|cy|wo|xh|sah|yap|yi|yo|zu"/>
 	
 	<setting label="Popularity Minimum" type="number" id="moviemeter_low" default=""/>
 	<setting label="Popularity Maximum" type="number" id="moviemeter_high" default=""/>
