@@ -196,7 +196,7 @@ def list_categories():
         imdb_url=urllib.quote_plus(url)
         plot = ""
         params['server'] = __settings__.getSetting( "server" )
-        for param in params:
+        for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
         url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)

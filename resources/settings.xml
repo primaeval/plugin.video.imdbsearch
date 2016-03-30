@@ -10,8 +10,8 @@
 
 	<setting label="Type" type="select" id="title_type" default="feature" values="feature|tv_movie|tv_series|tv_episode|tv_special|mini_series|documentary|game|short|video"/>
 
-	<setting label="Year Start" type="slider" id="release_date_start" subsetting="true" default="2015" range="1900,1,2016" option="int" />
-	<setting label="Year End" type="slider" id="release_date_end" subsetting="true" default="2016" range="1900,1,2016" option="int" />
+	<setting label="Year Start" type="slider" id="release_date_start" subsetting="true" default="2015" range="1900,1,2020" option="int" />
+	<setting label="Year End" type="slider" id="release_date_end" subsetting="true" default="2016" range="1900,1,2020" option="int" />
 
 	<setting label="User Rating Low" type="slider" id="user_rating_low" subsetting="true" default="6.0" range="0.0,0.1,10.0" option="float" />
 	<setting label="User Rating High" type="slider" id="user_rating_high" subsetting="true" default="10.0" range="0.0,0.1,10.0" option="float" />
