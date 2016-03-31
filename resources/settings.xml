@@ -19,7 +19,7 @@
 	<setting label="Votes Minimum" type="number" id="num_votes_low" default="100"/>
 	<setting label="Votes Maximum" type="number" id="num_votes_high" default=""/>
 
-	<setting label="Extra Genre" type="select" id="genres" values="Any|action|adventure|animation|biography|comedy|crime|documentary|drama|family|fantasy|film_noir|game_show|history|horror|music|musical|mystery|news|reality_tv|romance|sci_fi|sport|talk_show|thriller|war|western"/>
+	<setting label="Extra Genre" type="select" id="genres" values="Any|Action|Adventure|Animation|Biography|Comedy|Crime|Documentary|Drama|Family|Fantasy|Film Noir|Game show|History|Horror|Music|Musical|Mystery|News|Reality TV|Romance|Sci-Fi|Sport|Talk Show|Thriller|War|Western"/>
 
 	<setting label="Awards" type="select" id="groups" values="Any|top_100|top_250|top_1000|now-playing-us|oscar_winners|oscar_best_picture_winners|oscar_best_director_winners|oscar_nominees|emmy_winners|emmy_nominees|golden_globe_winners|golden_globe_nominees|razzie_winners|razzie_nominees|national_film_registry|bottom_100|bottom_250|bottom_1000"/>
 

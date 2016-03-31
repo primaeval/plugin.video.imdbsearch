@@ -15,6 +15,35 @@ import HTMLParser
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
+def get_genre(genres_select):
+    genres_dict = {"Any":"Any",
+    "Action":"action",
+    "Adventure":"adventure",
+    "Animation":"animation",
+    "Biography":"biography",
+    "Comedy":"comedy",
+    "Crime":"crime",
+    "Documentary":"documentary",
+    "Drama":"drama",
+    "Family":"family",
+    "Fantasy":"fantasy",
+    "Film Noir":"film_noir",
+    "Game show":"game_show",
+    "History":"history",
+    "Horror":"horror",
+    "Music":"music",
+    "Musical":"musical",
+    "Mystery":"mystery",
+    "News":"news",
+    "Reality TV":"reality_tv",
+    "Romance":"romance",
+    "Sci-Fi":"sci_fi",
+    "Sport":"sport",
+    "Talk Show":"talk_show",
+    "Thriller":"thriller",
+    "War":"war",
+    "Western":"western"}
+    return genres_dict[genres_select]
 
 def get_title_type(title_type_select):
     title_type_dict = {'Feature':'feature',
@@ -610,9 +639,9 @@ def get_countries(countries_select):
     return countries_dict[countries_select]
 
 def get_categories():
-    return ['*','action','adventure','animation','biography','comedy','crime','documentary','drama',
-    'family','fantasy','film_noir','game_show','history','horror','music','musical','mystery','news',
-    'reality_tv','romance','sci_fi','sport','talk_show','thriller','war','western']
+    return ["Any","Action","Adventure","Animation","Biography","Comedy","Crime","Documentary","Drama","Family",
+    "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
+    "Sci-Fi","Sport","Talk Show","Thriller","War","Western"]
 
 def get_url(category,start):
     imdb_query = [
@@ -622,7 +651,7 @@ def get_url(category,start):
     ("release_date", "%s,%s" % (__settings__.getSetting( "release_date_start" ),__settings__.getSetting( "release_date_end" ))),
     ("user_rating", "%.1f,%.1f" % (float(__settings__.getSetting( "user_rating_low" )),float(__settings__.getSetting( "user_rating_high" )))),
     ("num_votes", "%s,%s" % (__settings__.getSetting( "num_votes_low" ),__settings__.getSetting( "num_votes_high" ))),
-    ("genres", "%s,%s" % (category,__settings__.getSetting( "genres" ))),   
+    ("genres", "%s,%s" % (get_genre(category),get_genre(__settings__.getSetting( "genres" )))),   
     ("groups", "%s" % (__settings__.getSetting( "groups" ))),  
     ("companies", __settings__.getSetting( "companies" )),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
