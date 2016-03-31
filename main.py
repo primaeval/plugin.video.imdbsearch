@@ -15,14 +15,41 @@ import HTMLParser
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
-def get_certificate(certificates_select):
-    certificates_dict = {"Any":"Any",
+def get_server(server_select):
+    server_dict = {"Original Title":"akas",
+    "Normal":"www"}
+    return server_dict[server_select]
+
+def get_sort(sort_select):
+    sort_dict = {"Any":"Any",
+    "Moviemeter,Asc":"moviemeter,asc",
+    "Moviemeter,Desc":"moviemeter,desc",
+    "Alpha,Asc":"alpha,asc",
+    "Alpha,Desc":"alpha,desc",
+    "User Rating,Asc":"user rating,asc",
+    "User Rating,Desc":"user rating,desc",
+    "Num Votes,Asc":"num votes,asc",
+    "Num Votes,Desc":"num votes,desc",
+    "Boxoffice Gross US,Asc":"boxoffice gross us,asc",
+    "Boxoffice Gross US,Desc":"boxoffice gross us,desc",
+    "Runtime,Asc":"runtime,asc",
+    "Runtime,Desc":"runtime,desc",
+    "Year,Asc":"year,asc",
+    "Year,Desc":"year,desc",
+    "Release Date US,Asc":"release date us,asc",
+    "Release Date US,Desc":"release date us,desc",
+    "My Ratings":"my ratings",
+    "My Ratings,Asc":"my ratings,asc"}
+    return sort_dict[sort_select]
+
+def get_certificate(certificate_select):
+    certificate_dict = {"Any":"Any",
     "US:G":"us:g",
     "US:PG":"us:pg",
     "US:PG_13":"us:pg_13",
     "US:R":"us:r",
     "US:NC_17":"us:nc_17"}
-    return certificates_dict[certificates_select]
+    return certificate_dict[certificate_select]
 
 def get_company(companies_select):
     companies_dict = {"Any":"Any",
@@ -719,16 +746,16 @@ def get_url(category,start):
     ("groups", "%s" % (get_group(__settings__.getSetting( "groups" )))),  
     ("companies", get_company(__settings__.getSetting( "companies" ))),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
-    ("certificates", get_certificate(__settings__.getSetting( "certificates" ))),
+    ("sort", get_sort(__settings__.getSetting( "sort" ))),
     ("countries", get_countries(__settings__.getSetting( "countries" ))),
     ("languages", get_languages(__settings__.getSetting( "languages" ))),
     ("moviemeter", "%s,%s" % (__settings__.getSetting( "moviemeter_low" ),__settings__.getSetting( "moviemeter_high" ))),
     ("production_status", get_production_status(__settings__.getSetting( "production_status" ))),
     ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
-    ("sort", __settings__.getSetting( "sort" )),
+    ("sort", get_sort(__settings__.getSetting( "sort" ))),
     ("start", start),
     ]
-    server = __settings__.getSetting( "server" )
+    server = get_server(__settings__.getSetting( "server" ))
     url = "http://%s.imdb.com/search/title?" % server
     params = {}
     for (field, value) in imdb_query:
@@ -808,10 +835,10 @@ def get_videos(url):
         if runtime_match:
             runtime = int(runtime_match.group(1)) * 60
                 
-        certificate = ''
-        certificate_match = re.search(r'<span class="certificate"><span title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
-        if certificate_match:
-            certificate = certificate_match.group(1)
+        sort = ''
+        sort_match = re.search(r'<span class="sort"><span title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
+        if sort_match:
+            sort = sort_match.group(1)
             
         if imdbID:
             id = imdbID
@@ -829,12 +856,12 @@ def get_videos(url):
             videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':genres,
             'video':meta_url,'episode_id':episode_id,'imdb_id':imdbID,
             'code': id,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
-            'certificate':certificate,'cast':cast,'runtime':runtime,'votes':votes})
+            'sort':sort,'cast':cast,'runtime':runtime,'votes':votes})
             
     next_url = ''
     pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
     if pagination_match:
-        server = __settings__.getSetting( "server" )
+        server = get_server(__settings__.getSetting( "server" ))
         next_url = "http://%s.imdb.com%s" % (server,pagination_match.group(1))
         
     return (videos,next_url)
@@ -848,7 +875,7 @@ def find_episode(imdb_id,episode_id,title):
     if tvdb_match:
         tvdb_id = tvdb_match.group(1)
 
-    server = __settings__.getSetting( "server" )
+    server = get_server(__settings__.getSetting( "server" ))
     episode_url = "http://%s.imdb.com/title/%s" % (server,episode_id)
     r = requests.get(episode_url)
     episode_html = r.text
@@ -883,7 +910,7 @@ def list_categories():
         (url,params) = get_url(category,'')
         imdb_url=urllib.quote_plus(url)
         plot = ""
-        params['server'] = __settings__.getSetting( "server" )
+        params['server'] = get_server(__settings__.getSetting( "server" ))
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
@@ -891,7 +918,6 @@ def list_categories():
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "index_view" ))
@@ -918,7 +944,7 @@ def list_videos(imdb_url):
         list_item = xbmcgui.ListItem(label=vlabel)
         list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'],
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
-        'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
+        'mpaa': video['sort'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder

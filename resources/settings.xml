@@ -5,7 +5,7 @@
 
 	<setting label="Title" type="text" id="title" default=""/>
 	
-	<setting label="IMDb Server" type="select" id="server" default="www" values="akas|www"/>
+	<setting label="IMDb Server" type="select" id="server" default="Normal" values="Original Title|Normal"/>
 	<setting label="Results Per Page" type="select" id="count" default="50" values="50|100"/>
 
 	<setting label="Type" type="select" id="title_type" default="Feature" values="Feature|TV Movie|TV Series|TV Episode|TV Special|Mini Series|Documentary|Game|Short|Video"/>
@@ -42,7 +42,7 @@
 	<setting label="Runtime Minimum" type="number" id="runtime_low" default=""/>
 	<setting label="Runtime Maximum" type="number" id="runtime_high" default=""/>
 
-	<setting label="Sort" type="select" id="sort" default="alpha,asc" values="Any|moviemeter,asc|moviemeter,desc|alpha,asc|alpha,desc|user_rating,asc|user_rating,desc|num_votes,asc|num_votes,desc|boxoffice_gross_us,asc|boxoffice_gross_us,desc|runtime,asc|runtime,desc|year,asc|year,desc|release_date_us,asc|release_date_us,desc|my_ratings|my_ratings,asc"/>
+	<setting label="Sort" type="select" id="sort" default="Alpha,Asc" values="Any|Moviemeter,Asc|Moviemeter,Desc|Alpha,Asc|Alpha,Desc|User Rating,Asc|User Rating,Desc|Num Votes,Asc|Num Votes,Desc|Boxoffice Gross US,Asc|Boxoffice Gross US,Desc|Runtime,Asc|Runtime,Desc|Year,Asc|Year,Desc|Release Date US,Asc|Release Date US,Desc|My Ratings|My Ratings,Asc"/>
 
 </category>
 <category label="Display">
