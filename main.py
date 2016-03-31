@@ -15,8 +15,72 @@ import HTMLParser
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
+def get_certificate(certificates_select):
+    certificates_dict = {"Any":"Any",
+    "US:G":"us:g",
+    "US:PG":"us:pg",
+    "US:PG_13":"us:pg_13",
+    "US:R":"us:r",
+    "US:NC_17":"us:nc_17"}
+    return certificates_dict[certificates_select]
+
+def get_company(companies_select):
+    companies_dict = {"Any":"Any",
+    "Fox":"fox",
+    "Columbia":"columbia",
+    "Dreamworks":"dreamworks",
+    "MGM":"mgm",
+    "Paramount":"paramount",
+    "Universal":"universal",
+    "Disney":"disney",
+    "Warner":"warner"}
+    return companies_dict[companies_select]
+
+def get_production_status(production_status_select):
+    production_status_dict = {"Any":"*",
+    "Released":"released",
+    "Post Production":"post production",
+    "Filming":"filming",
+    "Pre Production":"pre production",
+    "Completed":"completed",
+    "Script":"script",
+    "Optioned Property":"optioned property",
+    "Announced":"announced",
+    "Treatment Outline":"treatment outline",
+    "Pitch":"pitch",
+    "Turnaround":"turnaround",
+    "Abandoned":"abandoned",
+    "Delayed":"delayed",
+    "Indefinitely Delayed":"indefinitely delayed",
+    "Active":"active",
+    "Unknown":"unknown"}
+    return production_status_dict[production_status_select]
+
+def get_group(groups_select):
+    groups_dict = {"Any":"*",
+    "Top 100":"top_100",
+    "Top 250":"top_250",
+    "Top 1000":"top_1000",
+    "Now Playing Us":"now-playing-us",
+    "Oscar Winners":"oscar_winners",
+    "Oscar Best Picture Winners":"oscar_best_picture_winners",
+    "Oscar Best Director Winners":"oscar_best_director_winners",
+    "Oscar Nominees":"oscar_nominees",
+    "Emmy Winners":"emmy_winners",
+    "Emmy Nominees":"emmy_nominees",
+    "Golden Globe Winners":"golden_globe_winners",
+    "Golden Globe Nominees":"golden_globe_nominees",
+    "Razzie Winners":"razzie_winners",
+    "Razzie Nominees":"razzie_nominees",
+    "National Film Registry":"national_film_registry",
+    "Bottom 100":"bottom_100",
+    "Bottom 250":"bottom_250",
+    "Bottom 1000":"bottom_1000"}
+    return groups_dict[groups_select]
+
 def get_genre(genres_select):
     genres_dict = {"Any":"Any",
+    "None":"",
     "Action":"action",
     "Adventure":"adventure",
     "Animation":"animation",
@@ -652,14 +716,14 @@ def get_url(category,start):
     ("user_rating", "%.1f,%.1f" % (float(__settings__.getSetting( "user_rating_low" )),float(__settings__.getSetting( "user_rating_high" )))),
     ("num_votes", "%s,%s" % (__settings__.getSetting( "num_votes_low" ),__settings__.getSetting( "num_votes_high" ))),
     ("genres", "%s,%s" % (get_genre(category),get_genre(__settings__.getSetting( "genres" )))),   
-    ("groups", "%s" % (__settings__.getSetting( "groups" ))),  
-    ("companies", __settings__.getSetting( "companies" )),
+    ("groups", "%s" % (get_group(__settings__.getSetting( "groups" )))),  
+    ("companies", get_company(__settings__.getSetting( "companies" ))),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
-    ("certificates", __settings__.getSetting( "certificates" )),
+    ("certificates", get_certificate(__settings__.getSetting( "certificates" ))),
     ("countries", get_countries(__settings__.getSetting( "countries" ))),
     ("languages", get_languages(__settings__.getSetting( "languages" ))),
     ("moviemeter", "%s,%s" % (__settings__.getSetting( "moviemeter_low" ),__settings__.getSetting( "moviemeter_high" ))),
-    ("production_status", __settings__.getSetting( "production_status" )),
+    ("production_status", get_production_status(__settings__.getSetting( "production_status" ))),
     ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
     ("sort", __settings__.getSetting( "sort" )),
     ("start", start),
@@ -668,7 +732,7 @@ def get_url(category,start):
     url = "http://%s.imdb.com/search/title?" % server
     params = {}
     for (field, value) in imdb_query:
-        if not "Any" in value and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
+        if not "Any" in value and value != "None" and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
             params[field] = value
     params_url = urllib.urlencode(params)
     url = "%s%s" % (url,params_url)
