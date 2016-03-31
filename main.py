@@ -26,20 +26,20 @@ def get_sort(sort_select):
     "Moviemeter,Desc":"moviemeter,desc",
     "Alpha,Asc":"alpha,asc",
     "Alpha,Desc":"alpha,desc",
-    "User Rating,Asc":"user rating,asc",
-    "User Rating,Desc":"user rating,desc",
-    "Num Votes,Asc":"num votes,asc",
-    "Num Votes,Desc":"num votes,desc",
-    "Boxoffice Gross US,Asc":"boxoffice gross us,asc",
-    "Boxoffice Gross US,Desc":"boxoffice gross us,desc",
+    "User Rating,Asc":"user_rating,asc",
+    "User Rating,Desc":"user_rating,desc",
+    "Num Votes,Asc":"num_votes,asc",
+    "Num Votes,Desc":"num_votes,desc",
+    "Boxoffice Gross US,Asc":"boxoffice_gross_us,asc",
+    "Boxoffice Gross US,Desc":"boxoffice_gross_us,desc",
     "Runtime,Asc":"runtime,asc",
     "Runtime,Desc":"runtime,desc",
     "Year,Asc":"year,asc",
     "Year,Desc":"year,desc",
-    "Release Date US,Asc":"release date us,asc",
-    "Release Date US,Desc":"release date us,desc",
-    "My Ratings":"my ratings",
-    "My Ratings,Asc":"my ratings,asc"}
+    "Release Date US,Asc":"release_date_us,asc",
+    "Release Date US,Desc":"release_date_us,desc",
+    "My Ratings":"my_ratings",
+    "My Ratings,Asc":"my_ratings,asc"}
     return sort_dict[sort_select]
 
 def get_certificate(certificate_select):
