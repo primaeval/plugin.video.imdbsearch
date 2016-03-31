@@ -344,7 +344,7 @@ def get_languages(languages_select):
     "Zulu":"zu"}
     return languages_dict[languages_select]
 
-def get_languages(countries_select):
+def get_countries(countries_select):
     countries_dict = {"Any":"*",
     "Argentina":"ar",
     "Australia":"au",
@@ -804,7 +804,7 @@ def list_categories():
 
 def list_videos(imdb_url):
     (videos,next_url) = get_videos(imdb_url)
-    title_type = get_title_type(__settings__.getSetting( "title_type" ))]
+    title_type = get_title_type(__settings__.getSetting( "title_type" ))
     if title_type == "tv_series" or title_type == "mini_series": 
         IsPlayable = 'false'
         is_folder = True
