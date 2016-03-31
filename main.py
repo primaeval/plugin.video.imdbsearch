@@ -726,7 +726,9 @@ def get_videos(url):
             if title_type == "tv_series" or title_type == "mini_series": 
                 meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % re.sub(' ','+',title)
             elif title_type == "tv_episode":
-                meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s" % (imdbID,episode_id)
+                vlabel = "%s - %s" % (title, episode)
+                vlabel = urllib.quote_plus(vlabel)
+                meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s&title=%s" % (imdbID,episode_id,vlabel)
                 id = episode_id
             else:
                 meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID
@@ -744,7 +746,7 @@ def get_videos(url):
         
     return (videos,next_url)
 
-def find_episode(imdb_id,episode_id):
+def find_episode(imdb_id,episode_id,title):
     tvdb_url = "http://thetvdb.com//api/GetSeriesByRemoteID.php?imdbid=%s" % imdb_id
     r = requests.get(tvdb_url)
     tvdb_html = r.text
@@ -767,10 +769,10 @@ def find_episode(imdb_id,episode_id):
         episode = season_match.group(2)
         
     meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'default')
-    list_item = xbmcgui.ListItem(label=meta_url)
+    list_item = xbmcgui.ListItem(label=title)
     list_item.setPath(meta_url)
     list_item.setProperty("IsPlayable", "true")
-    list_item.setInfo(type='Video', infoLabels={'Title': meta_url})
+    list_item.setInfo(type='Video', infoLabels={'Title': title})
     xbmcplugin.setResolvedUrl(_handle, True, listitem=list_item)
     
 
@@ -882,7 +884,10 @@ def router(paramstring):
                 imdb_id = params['imdb_id']
             if 'episode_id' in params.keys():
                 episode_id = params['episode_id']
-                find_episode(imdb_id,episode_id)
+            if 'title' in params.keys():
+                title = params['title']
+                title = urllib.unquote_plus(title)
+                find_episode(imdb_id,episode_id,title)
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
