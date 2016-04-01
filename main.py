@@ -781,7 +781,7 @@ def get_videos(url):
         img_match = re.search(r'<img src="(.*?)"', item)
         if img_match:
             img = img_match.group(1)
-            img_url = re.sub(r'S[XY].*_.jpg','SX214_.jpg',img)
+            img_url = re.sub(r'S[XY].*_.jpg','SX344_.jpg',img)
 
         title = ''
         imdbID = ''
@@ -926,7 +926,9 @@ def list_categories():
 def list_videos(imdb_url):
     (videos,next_url) = get_videos(imdb_url)
     title_type = get_title_type(__settings__.getSetting( "title_type" ))
+    type = 'movies'
     if title_type == "tv_series" or title_type == "mini_series": 
+        type = 'tv'
         IsPlayable = 'false'
         is_folder = True
     elif title_type == "game": 
@@ -948,7 +950,12 @@ def list_videos(imdb_url):
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
-        list_item.addContextMenuItems( [('Extended Info...', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code'])] ) 
+        context_items = []
+        if type == 'movies':
+            context_items.append(('Add To Meta Library', "XBMC.RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,video['code'])))
+        context_items.append(('Information', 'XBMC.Action(Info)'))
+        context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code']))
+        list_item.addContextMenuItems(context_items)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
         video_streaminfo['width'] = 1280
