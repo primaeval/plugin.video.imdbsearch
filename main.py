@@ -781,7 +781,7 @@ def get_videos(url):
         img_match = re.search(r'<img src="(.*?)"', item)
         if img_match:
             img = img_match.group(1)
-            img_url = re.sub(r'S[XY].*_.jpg','SX344_.jpg',img)
+            img_url = re.sub(r'S[XY].*_.jpg','SX344_.jpg',img) #NOTE 344 is Confluence List View width
 
         title = ''
         imdbID = ''
@@ -847,7 +847,7 @@ def get_videos(url):
                 meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % re.sub(' ','+',title)
             elif title_type == "tv_episode":
                 vlabel = "%s - %s" % (title, episode)
-                vlabel = urllib.quote_plus(vlabel)
+                vlabel = urllib.quote_plus(vlabel.encode("utf8"))
                 meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s&title=%s" % (imdbID,episode_id,vlabel)
                 id = episode_id
             else:
@@ -930,7 +930,7 @@ def list_categories():
 def list_videos(imdb_url):
     (videos,next_url) = get_videos(imdb_url)
     title_type = get_title_type(__settings__.getSetting( "title_type" ))
-    type = 'movies'
+    type = ''
     if title_type == "tv_series" or title_type == "mini_series": 
         type = 'tv'
         IsPlayable = 'false'
@@ -938,7 +938,11 @@ def list_videos(imdb_url):
     elif title_type == "game": 
         IsPlayable = 'false'
         is_folder = False
+    elif title_type == 'tv_episode':
+        IsPlayable = 'true'
+        is_folder = False
     else:
+        type = 'movies'
         IsPlayable = 'true'
         is_folder = False
     listing = []
@@ -955,8 +959,9 @@ def list_videos(imdb_url):
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
         context_items = []
-        run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
-        context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
+        if type == 'movies' or type == 'tv':
+            run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
+            context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
         context_items.append(('Information', 'XBMC.Action(Info)'))
         context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code']))
         list_item.addContextMenuItems(context_items)
