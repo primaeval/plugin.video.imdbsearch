@@ -1014,7 +1014,7 @@ def router(paramstring):
     if params:
         if params['action'] == 'meta_settings':
             xbmcaddon.Addon(id='plugin.video.meta').openSettings()        
-        if params['action'] == 'library':
+        elif params['action'] == 'library':
             if 'type' in params.keys():
                 type = params['type']
             if 'imdb_id' in params.keys():
@@ -1023,11 +1023,11 @@ def router(paramstring):
             if type == 'tv':
                 id = get_tvdb_id(imdb_id)
             xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,id))
-        if params['action'] == 'listing':
+        elif params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
                 list_videos(urllib.unquote_plus(imdb))
-        if params['action'] == 'episode':
+        elif params['action'] == 'episode':
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
             if 'episode_id' in params.keys():
