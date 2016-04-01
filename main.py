@@ -800,7 +800,7 @@ def get_url(category,start):
     url = "http://%s.imdb.com/search/title?" % server
     params = {}
     for (field, value) in imdb_query:
-        if not "Any" in value and value != "None" and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
+        if not "Any" in value and value != "None" and value != "" and value != ",":
             params[field] = value
     params_url = urllib.urlencode(params)
     url = "%s%s" % (url,params_url)
@@ -979,17 +979,22 @@ def list_videos(imdb_url):
     (videos,next_url) = get_videos(imdb_url)
     title_type = get_title_type(__settings__.getSetting( "title_type" ))
     type = ''
+    content = ''
     if title_type == "tv_series" or title_type == "mini_series": 
+        content = 'tvshows'
         type = 'tv'
         IsPlayable = 'false'
         is_folder = True
-    elif title_type == "game": 
+    elif title_type == "game":
+        content = 'files'
         IsPlayable = 'false'
         is_folder = False
     elif title_type == 'tv_episode':
+        content = 'episodes'
         IsPlayable = 'true'
         is_folder = False
     else:
+        content = 'movies'
         type = 'movies'
         IsPlayable = 'true'
         is_folder = False
@@ -1038,7 +1043,8 @@ def list_videos(imdb_url):
         listing.append((url, list_item, is_folder))
         xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
 
-    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+        
+    xbmcplugin.setContent(int(sys.argv[1]), content)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_YEAR)
