@@ -964,6 +964,8 @@ def list_videos(imdb_url):
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
         context_items.append(('Information', 'XBMC.Action(Info)'))
         context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code']))
+        context_items.append(('Meta Settings', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=meta_settings)"))
+        
         list_item.addContextMenuItems(context_items)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
@@ -1010,6 +1012,8 @@ def play_video(path):
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
+        if params['action'] == 'meta_settings':
+            xbmcaddon.Addon(id='plugin.video.meta').openSettings()        
         if params['action'] == 'library':
             if 'type' in params.keys():
                 type = params['type']
