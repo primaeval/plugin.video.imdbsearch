@@ -884,7 +884,7 @@ def get_videos(url):
             id = imdbID
             title_type = get_title_type(__settings__.getSetting( "title_type" ))
             if title_type == "tv_series" or title_type == "mini_series": 
-                meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % re.sub(' ','+',title)
+                meta_url = "plugin://plugin.video.imdbsearch/?action=series&imdb_id=%s" % (imdbID)
             elif title_type == "tv_episode":
                 vlabel = "%s - %s" % (title, episode)
                 vlabel = urllib.quote_plus(vlabel.encode("utf8"))
@@ -1078,6 +1078,11 @@ def router(paramstring):
                 title = params['title']
                 title = urllib.unquote_plus(title)
                 find_episode(imdb_id,episode_id,title)
+        elif params['action'] == 'series':
+            if 'imdb_id' in params.keys():
+                imdb_id = params['imdb_id']
+                id = get_tvdb_id(imdb_id)
+                xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/tv/tvdb/%s)" % (id))
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
