@@ -5,7 +5,9 @@ from urlparse import parse_qsl
 import xbmcgui
 import xbmcplugin
 import xbmcgui
+import xbmcaddon
 import sys
+import os
 
 import requests
 import re
@@ -14,6 +16,44 @@ import HTMLParser
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
+
+def get_icon_path(icon_name):
+    addon_path = xbmcaddon.Addon().getAddonInfo("path")    
+    return os.path.join(addon_path, 'resources', 'img', icon_name+".png")
+
+def get_genre_icon(genre):
+    icons = {
+    "Any":"genre_any",
+    "Action":"genre_action",
+    "Adventure":"genre_adventure",
+    "Animation":"genre_animation",
+    "Biography":"genre_biography",
+    "Comedy":"genre_comedy",
+    "Crime":"genre_crime",
+    "Documentary":"genre_documentary",
+    "Drama":"genre_drama",
+    "Family":"genre_family",
+    "Fantasy":"genre_fantasy",
+    "Film Noir":"genre_film_noir",
+    "Game show":"genre_game_show",
+    "History":"genre_history",
+    "Horror":"genre_horror",
+    "Music":"genre_music",
+    "Musical":"genre_musical",
+    "Mystery":"genre_mystery",
+    "News":"genre_news",
+    "Reality TV":"genre_reality_tv",
+    "Romance":"genre_romance",
+    "Sci-Fi":"genre_sci_fi",
+    "Sport":"genre_sport",
+    "Talk Show":"genre_talk_show",
+    "Thriller":"genre_thriller",
+    "War":"genre_war",
+    "Western":"genre_western"
+    }
+    if genre in icons:
+        return get_icon_path(icons[genre])
+    return "DefaultVideo.png"
 
 def get_server(server_select):
     server_dict = {"Original Title":"akas",
@@ -911,6 +951,8 @@ def list_categories():
         else:
             name = cat
         list_item = xbmcgui.ListItem(label=name)
+        genre_icon = get_genre_icon(category)
+        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
         (url,params) = get_url(category,'')
         imdb_url=urllib.quote_plus(url)
         plot = ""
