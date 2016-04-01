@@ -980,7 +980,9 @@ def list_videos(imdb_url):
     title_type = get_title_type(__settings__.getSetting( "title_type" ))
     type = ''
     content = ''
+    info_type = ''
     if title_type == "tv_series" or title_type == "mini_series": 
+        info_type = 'extendedtvinfo'
         content = 'tvshows'
         type = 'tv'
         IsPlayable = 'false'
@@ -990,10 +992,12 @@ def list_videos(imdb_url):
         IsPlayable = 'false'
         is_folder = False
     elif title_type == 'tv_episode':
+        info_type = ''
         content = 'episodes'
         IsPlayable = 'true'
         is_folder = False
     else:
+        info_type = 'extendedinfo'
         content = 'movies'
         type = 'movies'
         IsPlayable = 'true'
@@ -1016,7 +1020,8 @@ def list_videos(imdb_url):
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
         context_items.append(('Information', 'XBMC.Action(Info)'))
-        context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code']))
+        if info_type:
+            context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
         context_items.append(('Meta Settings', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=meta_settings)"))
         
         list_item.addContextMenuItems(context_items)
