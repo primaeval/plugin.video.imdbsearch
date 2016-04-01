@@ -787,6 +787,7 @@ def get_url(category,start):
     ("companies", get_company(__settings__.getSetting( "companies" ))),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
+    ("certificates", get_certificate(__settings__.getSetting( "certificates" ))),
     ("countries", get_countries(__settings__.getSetting( "countries" ))),
     ("languages", get_languages(__settings__.getSetting( "languages" ))),
     ("moviemeter", "%s,%s" % (__settings__.getSetting( "moviemeter_low" ),__settings__.getSetting( "moviemeter_high" ))),
@@ -879,6 +880,11 @@ def get_videos(url):
         sort_match = re.search(r'<span class="sort"><span title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
         if sort_match:
             sort = sort_match.group(1)
+
+        certificate = ''
+        certificate_match = re.search(r'<span class="certificate">.*?title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
+        if certificate_match:
+            certificate = certificate_match.group(1)
             
         if imdbID:
             id = imdbID
@@ -896,7 +902,7 @@ def get_videos(url):
             videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':genres,
             'video':meta_url,'episode_id':episode_id,'imdb_id':imdbID,
             'code': id,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
-            'sort':sort,'cast':cast,'runtime':runtime,'votes':votes})
+            'sort':sort,'cast':cast,'runtime':runtime,'votes':votes, 'certificate':certificate})
             
     next_url = ''
     pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
@@ -996,7 +1002,7 @@ def list_videos(imdb_url):
         list_item = xbmcgui.ListItem(label=vlabel)
         list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'],
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
-        'mpaa': video['sort'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
+        'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
