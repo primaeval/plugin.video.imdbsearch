@@ -865,15 +865,19 @@ def get_videos(url):
         next_url = "http://%s.imdb.com%s" % (server,pagination_match.group(1))
         
     return (videos,next_url)
-
-def find_episode(imdb_id,episode_id,title):
+    
+def get_tvdb_id(imdb_id):
     tvdb_url = "http://thetvdb.com//api/GetSeriesByRemoteID.php?imdbid=%s" % imdb_id
     r = requests.get(tvdb_url)
     tvdb_html = r.text
-    tvdb = ''
+    tvdb_id = ''
     tvdb_match = re.search(r'<seriesid>(.*?)</seriesid>', tvdb_html, flags=(re.DOTALL | re.MULTILINE))
     if tvdb_match:
         tvdb_id = tvdb_match.group(1)
+    return tvdb_id
+
+def find_episode(imdb_id,episode_id,title):
+    tvdb_id = get_tvdb_id(imdb_id)
 
     server = get_server(__settings__.getSetting( "server" ))
     episode_url = "http://%s.imdb.com/title/%s" % (server,episode_id)
@@ -951,8 +955,8 @@ def list_videos(imdb_url):
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
         context_items = []
-        if type == 'movies':
-            context_items.append(('Add To Meta Library', "XBMC.RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,video['code'])))
+        run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
+        context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
         context_items.append(('Information', 'XBMC.Action(Info)'))
         context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=extendedinfo,imdb_id=%s)" % video['code']))
         list_item.addContextMenuItems(context_items)
@@ -1001,6 +1005,15 @@ def play_video(path):
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
+        if params['action'] == 'library':
+            if 'type' in params.keys():
+                type = params['type']
+            if 'imdb_id' in params.keys():
+                imdb_id = params['imdb_id']
+            id = imdb_id
+            if type == 'tv':
+                id = get_tvdb_id(imdb_id)
+            xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,id))
         if params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
