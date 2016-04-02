@@ -1023,15 +1023,15 @@ def list_videos(imdb_url):
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
         context_items = []
-        if type == 'movies' or type == 'tv':
-            run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
-            context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
         context_items.append(('Information', 'XBMC.Action(Info)'))
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
-        context_items.append(('Meta Settings', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=meta_settings)"))
         if type == 'movies':
             context_items.append(('Add to Trakt Watchlist', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&imdb_id=%s)" % video['code']))
+        if type == 'movies' or type == 'tv':
+            run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
+            context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
+        context_items.append(('Meta Settings', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=meta_settings)"))
         list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
