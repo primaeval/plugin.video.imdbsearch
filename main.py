@@ -1027,7 +1027,8 @@ def list_videos(imdb_url):
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
         if type == 'movies':
-            context_items.append(('Add to Trakt Watchlist', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&imdb_id=%s)" % video['code']))
+            context_items.append(('Add to Trakt Watchlist', 
+            "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&imdb_id=%s&title=%s)" % (video['code'],urllib.quote_plus(vlabel))))
         if type == 'movies' or type == 'tv':
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
@@ -1089,13 +1090,13 @@ def authenticate():
         __settings__.setSetting( "authorization", dumps(authorization))
         return True
 
-def add_to_trakt_watchlist(imdb_id):
+def add_to_trakt_watchlist(imdb_id,title):
     Trakt.configuration.defaults.app(
-        id=999
+        id=8835
     )
     Trakt.configuration.defaults.client(
-        id="d4161a7a106424551add171e5470112e4afdaf2438e6ef2fe0548edc75924868",
-        secret="b5fcd7cb5d9bb963784d11bbf8535bc0d25d46225016191eb48e50792d2155c0"
+        id="aa1c239000c56319a64014d0b169c0dbf03f7770204261c9edbe8ae5d4e50332",
+        secret="250284a95fd22e389b565661c98d0f33ac222e9d03c43b5931e03946dbf858dc"
     )
     Trakt.on('oauth.token_refreshed', on_token_refreshed)
     if not __settings__.getSetting('authorization'):
@@ -1113,7 +1114,7 @@ def add_to_trakt_watchlist(imdb_id):
             ]
         })
         dialog = xbmcgui.Dialog()
-        dialog.notification("Trakt","added %s to watchlist" % imdb_id)
+        dialog.notification("Trakt: add to watchlist",title)
     
     
 def router(paramstring):
@@ -1135,9 +1136,12 @@ def router(paramstring):
                 imdb = params['imdb']
                 list_videos(urllib.unquote_plus(imdb))
         elif params['action'] == 'addtotraktwatchlist':
+            if 'title' in params.keys():
+                title = params['title']
+                title = urllib.unquote_plus(title)
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
-                add_to_trakt_watchlist(imdb_id)
+                add_to_trakt_watchlist(imdb_id,title)
         elif params['action'] == 'episode':
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
@@ -1146,7 +1150,7 @@ def router(paramstring):
             if 'title' in params.keys():
                 title = params['title']
                 title = urllib.unquote_plus(title)
-                find_episode(imdb_id,episode_id,title)
+            find_episode(imdb_id,episode_id,title)
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
