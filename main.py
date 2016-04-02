@@ -1001,8 +1001,10 @@ def list_videos(imdb_url):
         IsPlayable = 'false'
         is_folder = False
     elif title_type == 'tv_episode':
+        trakt_type = 'episodes'
         info_type = ''
         content = 'episodes'
+        type = 'episode'
         IsPlayable = 'true'
         is_folder = False
     else:
@@ -1029,7 +1031,7 @@ def list_videos(imdb_url):
         context_items.append(('Information', 'XBMC.Action(Info)'))
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
-        if type == 'movies' or type == 'tv':
+        if type == 'movies' or type == 'tv' or type == 'episode':
             context_items.append(('Add to Trakt Watchlist', 
             "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
             (trakt_type, video['code'], urllib.quote_plus(vlabel))))
