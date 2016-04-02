@@ -1098,8 +1098,7 @@ def add_to_trakt_watchlist(imdb_id):
         secret="b5fcd7cb5d9bb963784d11bbf8535bc0d25d46225016191eb48e50792d2155c0"
     )
     Trakt.on('oauth.token_refreshed', on_token_refreshed)
-    authorization = loads(__settings__.getSetting('authorization'))
-    if not authorization:
+    if not __settings__.getSetting('authorization'):
         if not authenticate():
             return
     authorization = loads(__settings__.getSetting('authorization'))
