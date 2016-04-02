@@ -54,7 +54,7 @@
 	
 	<setting type="sep"/>
 	
-	<setting label="Category View Mode ID" type="number" id="index_view" default="504"/>
+	<!--<setting label="Category View Mode ID" type="number" id="index_view" default="504"/>-->
 	<setting label="TV Episode View Mode ID" type="number" id="tv_view" default="50"/>
 	<setting label="Default View Mode ID" type="number" id="video_view" default="50"/>
 </category>

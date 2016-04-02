@@ -979,7 +979,7 @@ def list_categories():
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-    xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "index_view" ))
+    #xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "index_view" ))
 
 
 def list_videos(imdb_url):
