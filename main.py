@@ -800,7 +800,7 @@ def get_url(category,start):
     url = "http://%s.imdb.com/search/title?" % server
     params = {}
     for (field, value) in imdb_query:
-        if not "Any" in value and value != "None" and value != "" and value != ",":
+        if not "Any" in value and value != "None" and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
             params[field] = value
     params_url = urllib.urlencode(params)
     url = "%s%s" % (url,params_url)
