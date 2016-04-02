@@ -988,7 +988,9 @@ def list_videos(imdb_url):
     type = ''
     content = ''
     info_type = ''
+    trakt_type = ''
     if title_type == "tv_series" or title_type == "mini_series": 
+        trakt_type = 'shows'
         info_type = 'extendedtvinfo'
         content = 'tvshows'
         type = 'tv'
@@ -1004,6 +1006,7 @@ def list_videos(imdb_url):
         IsPlayable = 'true'
         is_folder = False
     else:
+        trakt_type = 'movies'
         info_type = 'extendedinfo'
         content = 'movies'
         type = 'movies'
@@ -1026,9 +1029,10 @@ def list_videos(imdb_url):
         context_items.append(('Information', 'XBMC.Action(Info)'))
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
-        if type == 'movies':
+        if type == 'movies' or type == 'tv':
             context_items.append(('Add to Trakt Watchlist', 
-            "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&imdb_id=%s&title=%s)" % (video['code'],urllib.quote_plus(vlabel))))
+            "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
+            (trakt_type, video['code'], urllib.quote_plus(vlabel))))
         if type == 'movies' or type == 'tv':
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
@@ -1090,7 +1094,7 @@ def authenticate():
         __settings__.setSetting( "authorization", dumps(authorization))
         return True
 
-def add_to_trakt_watchlist(imdb_id,title):
+def add_to_trakt_watchlist(type,imdb_id,title):
     Trakt.configuration.defaults.app(
         id=8835
     )
@@ -1105,7 +1109,7 @@ def add_to_trakt_watchlist(imdb_id,title):
     authorization = loads(__settings__.getSetting('authorization'))
     with Trakt.configuration.oauth.from_response(authorization, refresh=True):
         result = Trakt['sync/watchlist'].add({
-            'movies': [
+            type: [
                 {
                     'ids': {
                         'imdb': imdb_id
@@ -1136,12 +1140,14 @@ def router(paramstring):
                 imdb = params['imdb']
                 list_videos(urllib.unquote_plus(imdb))
         elif params['action'] == 'addtotraktwatchlist':
+            if 'type' in params.keys():
+                type = params['type']
             if 'title' in params.keys():
                 title = params['title']
                 title = urllib.unquote_plus(title)
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
-                add_to_trakt_watchlist(imdb_id,title)
+                add_to_trakt_watchlist(type,imdb_id,title)
         elif params['action'] == 'episode':
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
