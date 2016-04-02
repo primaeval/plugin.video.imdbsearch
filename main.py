@@ -1087,7 +1087,7 @@ def on_token_refreshed(response):
 
 def authenticate():
         dialog = xbmcgui.Dialog()
-        pin = dialog.input('Navigate to %s' % Trakt['oauth'].pin_url(), type=xbmcgui.INPUT_ALPHANUM)
+        pin = dialog.input('Open a web browser at %s' % Trakt['oauth'].pin_url(), type=xbmcgui.INPUT_ALPHANUM)
         if not pin:
             return False
         authorization = Trakt['oauth'].token_exchange(pin, 'urn:ietf:wg:oauth:2.0:oob')
