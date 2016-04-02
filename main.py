@@ -1009,7 +1009,7 @@ def list_videos(imdb_url):
         else:
             vlabel = video['name']
         list_item = xbmcgui.ListItem(label=vlabel)
-        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'],
+        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'], 'tagline': video['code'],
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
@@ -1023,8 +1023,9 @@ def list_videos(imdb_url):
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
         context_items.append(('Meta Settings', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=meta_settings)"))
-        
-        list_item.addContextMenuItems(context_items)
+        if type == 'movies':
+            context_items.append(('Add to Trakt Watchlist', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&imdb_id=%s)" % video['code']))
+        list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
         video_streaminfo['width'] = 1280
@@ -1067,7 +1068,27 @@ def play_video(path):
     play_item = xbmcgui.ListItem(path=path)
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
-
+def add_to_trakt_watchlist(imdb_id):
+    from trakt import Trakt
+    Trakt.configuration.defaults.client(
+        id="d4161a7a106424551add171e5470112e4afdaf2438e6ef2fe0548edc75924868",
+        secret="b5fcd7cb5d9bb963784d11bbf8535bc0d25d46225016191eb48e50792d2155c0"
+    )
+    
+    authorization = {"access_token": "23c912791bf2ad1780a0e5613b4aa314cc8159110caae0906ee5a5e9022020cd", "created_at": 1459239773, "expires_in": 7776000, "token_type": "bearer", "scope": "public", "refresh_token": "9fedf5df85be865ca633c91e391f5199683f777b6b813ebe2992af71516dea6d"}
+    
+    with Trakt.configuration.oauth.from_response(authorization):
+        Trakt['sync/watchlist'].add({
+            'movies': [
+                {
+                    'ids': {
+                        'imdb': imdb_id
+                    }
+                }
+            ]
+        })
+    
+    
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
@@ -1086,6 +1107,10 @@ def router(paramstring):
             if 'imdb' in params.keys():
                 imdb = params['imdb']
                 list_videos(urllib.unquote_plus(imdb))
+        elif params['action'] == 'addtotraktwatchlist':
+            if 'imdb_id' in params.keys():
+                imdb_id = params['imdb_id']
+                add_to_trakt_watchlist(imdb_id)
         elif params['action'] == 'episode':
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
