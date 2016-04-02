@@ -1021,7 +1021,7 @@ def list_videos(imdb_url):
         else:
             vlabel = video['name']
         list_item = xbmcgui.ListItem(label=vlabel)
-        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'], 'tagline': video['code'],
+        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'], 
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
