@@ -1162,6 +1162,7 @@ def router(paramstring):
         elif params['action'] == 'play':
             play_video(params['video'])
     else:
+        __settings__.openSettings()
         list_categories()
 
 
