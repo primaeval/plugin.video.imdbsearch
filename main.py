@@ -13,7 +13,14 @@ import requests
 import re
 import urllib,urlparse
 import HTMLParser
+from trakt import Trakt
 
+if sys.version_info >= (2, 7):
+    from json import loads, dumps
+else:
+    from simplejson import loads, dumps
+
+    
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
@@ -1068,17 +1075,36 @@ def play_video(path):
     play_item = xbmcgui.ListItem(path=path)
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
+def on_token_refreshed(response):
+        __settings__.setSetting( "authorization", dumps(response))
+
+def authenticate():
+        dialog = xbmcgui.Dialog()
+        pin = dialog.input('Navigate to %s' % Trakt['oauth'].pin_url(), type=xbmcgui.INPUT_ALPHANUM)
+        if not pin:
+            return False
+        authorization = Trakt['oauth'].token_exchange(pin, 'urn:ietf:wg:oauth:2.0:oob')
+        if not authorization:
+            return False
+        __settings__.setSetting( "authorization", dumps(authorization))
+        return True
+
 def add_to_trakt_watchlist(imdb_id):
-    from trakt import Trakt
+    Trakt.configuration.defaults.app(
+        id=999
+    )
     Trakt.configuration.defaults.client(
         id="d4161a7a106424551add171e5470112e4afdaf2438e6ef2fe0548edc75924868",
         secret="b5fcd7cb5d9bb963784d11bbf8535bc0d25d46225016191eb48e50792d2155c0"
     )
-    
-    authorization = {"access_token": "23c912791bf2ad1780a0e5613b4aa314cc8159110caae0906ee5a5e9022020cd", "created_at": 1459239773, "expires_in": 7776000, "token_type": "bearer", "scope": "public", "refresh_token": "9fedf5df85be865ca633c91e391f5199683f777b6b813ebe2992af71516dea6d"}
-    
-    with Trakt.configuration.oauth.from_response(authorization):
-        Trakt['sync/watchlist'].add({
+    Trakt.on('oauth.token_refreshed', on_token_refreshed)
+    authorization = loads(__settings__.getSetting('authorization'))
+    if not authorization:
+        if not authenticate():
+            return
+    authorization = loads(__settings__.getSetting('authorization'))
+    with Trakt.configuration.oauth.from_response(authorization, refresh=True):
+        result = Trakt['sync/watchlist'].add({
             'movies': [
                 {
                     'ids': {
@@ -1087,6 +1113,8 @@ def add_to_trakt_watchlist(imdb_id):
                 }
             ]
         })
+        dialog = xbmcgui.Dialog()
+        dialog.notification("Trakt","added %s to watchlist" % imdb_id)
     
     
 def router(paramstring):
