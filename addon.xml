@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.imdbsearch"
-version="0.0.4"
+version="0.0.7"
 name="Advanced IMDb Title Search"
 provider-name="primaeval">
 <requires>
   <import addon="xbmc.python" version="2.24.0"/>
   <import addon="script.module.requests" version="2.4.3" />
+  <import addon="script.trakt" version="3.1.4"/>
   <import addon="script.module.trakt" version="2.5.2"/>
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
