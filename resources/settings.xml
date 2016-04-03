@@ -60,4 +60,7 @@
 	<setting label="Default View Mode ID" type="number" id="video_view" default="50"/>
 </category>
 
+<category label="Accounts">
+	<setting label="Enable Trakt" type="bool" id="trakt" default="true"/>
+</category>
 </settings>

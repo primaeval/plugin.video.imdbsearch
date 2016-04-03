@@ -1032,9 +1032,10 @@ def list_videos(imdb_url):
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
         if type == 'movies' or type == 'tv' or type == 'episode':
-            context_items.append(('Add to Trakt Watchlist', 
-            "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
-            (trakt_type, video['code'], urllib.quote_plus(vlabel))))
+            if __settings__.getSetting('trakt') == 'true':
+                context_items.append(('Add to Trakt Watchlist', 
+                "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
+                (trakt_type, video['code'], urllib.quote_plus(vlabel))))
         if type == 'movies' or type == 'tv':
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
@@ -1168,4 +1169,6 @@ def router(paramstring):
 
 
 if __name__ == '__main__':
+    if __settings__.getSetting('trakt') == 'false':
+        __settings__.setSetting( "authorization", '')
     router(sys.argv[2][1:])
