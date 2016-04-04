@@ -1064,7 +1064,7 @@ def list_videos(imdb_url):
             if __settings__.getSetting('trakt') == 'true':
                 context_items.append(('Add to Trakt Watchlist', 
                 "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
-                (trakt_type, video['code'], urllib.quote_plus(vlabel))))
+                (trakt_type, video['code'], urllib.quote_plus(vlabel.encode("utf8")))))
         if type == 'movies' or type == 'tv':
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
