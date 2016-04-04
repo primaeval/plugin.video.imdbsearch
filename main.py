@@ -1081,7 +1081,10 @@ def list_videos(imdb_url):
                 ('Add to Sickrage', "XBMC.RunPlugin(plugin://plugin.video.sickrage?action=addshow&&show_name=%s)" % (video['name'])))
         except:
             pass
-        list_item.addContextMenuItems(context_items,replaceItems=True)
+        if __settings__.getSetting('default_context_menu') == 'true':
+            list_item.addContextMenuItems(context_items,replaceItems=False)
+        else:
+            list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
         video_streaminfo['width'] = 1280

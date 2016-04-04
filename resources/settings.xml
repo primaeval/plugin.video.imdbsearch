@@ -53,6 +53,7 @@
 	
 	<setting type="sep"/>
 	<setting label="Open Settings on Start" type="bool" id="open_settings" default="true"/>
+	<setting label="Enable Default Context Menu Items" type="bool" id="default_context_menu" default="false"/>
 	
 	<setting type="sep"/>
 	<!--<setting label="Category View Mode ID" type="number" id="index_view" default="504"/>-->
