@@ -1134,10 +1134,11 @@ def router(paramstring):
                 type = params['type']
             if 'imdb_id' in params.keys():
                 imdb_id = params['imdb_id']
-            id = imdb_id
             if type == 'tv':
                 id = get_tvdb_id(imdb_id)
-            xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,id))
+                xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,id))
+            else:
+                xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/tmdb/%s)" % (type,imdb_id))
         elif params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
