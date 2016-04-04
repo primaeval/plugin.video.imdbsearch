@@ -1040,6 +1040,18 @@ def list_videos(imdb_url):
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
         context_items.append(('Meta Settings', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=meta_settings)"))
+        try:
+            if type == 'movies' and xbmcaddon.Addon('plugin.video.couchpotato_manager'):
+                context_items.append(
+                ('Add to Couch Potato', "XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/add-by-id/%s)" % (video['code'])))
+        except:
+            pass
+        try:
+            if type == 'tv' and xbmcaddon.Addon('plugin.video.sickrage'):
+                context_items.append(
+                ('Add to Sickrage', "XBMC.RunPlugin(plugin://plugin.video.sickrage?action=addshow&&show_name=%s)" % (video['name'])))
+        except:
+            pass
         list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
