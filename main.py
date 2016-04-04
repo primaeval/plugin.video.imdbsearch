@@ -19,7 +19,6 @@ if sys.version_info >= (2, 7):
     from json import loads, dumps
 else:
     from simplejson import loads, dumps
-
     
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -776,6 +775,10 @@ def get_countries(countries_select):
     "Zimbabwe":"zw"}
     return countries_dict[countries_select]
 
+def get_searches():
+    #TODO persistent searches
+    return []
+    
 def get_categories():
     return ["Any","Action","Adventure","Animation","Biography","Comedy","Crime","Documentary","Drama","Family",
     "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
@@ -811,7 +814,7 @@ def get_url(category,start):
             params[field] = value
     params_url = urllib.urlencode(params)
     url = "%s%s" % (url,params_url)
-    return (url,params)
+    return (url,params,server)
 
 def get_videos(url):
     r = requests.get(url)
@@ -952,12 +955,39 @@ def find_episode(imdb_id,episode_id,title):
     list_item.setInfo(type='Video', infoLabels={'Title': title})
     xbmcplugin.setResolvedUrl(_handle, True, listitem=list_item)
     
+    
+def list_searches():
+    searches = get_searches()
+    (url,params,server) = get_url('None','')
+    imdb_url=urllib.quote_plus(url)
+    prefix = __settings__.getSetting( "prefix" )
+    if not prefix:
+        name = 'Search'
+    else:
+        name = '%s Search' % prefix
+    searches.append((name,imdb_url,params))
+    listing = []
+    for (name,imdb_url,params) in searches:
+        list_item = xbmcgui.ListItem(label=name)
+        genre_icon = get_genre_icon('Any')
+        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
+        plot = ""
+        params['server'] = server
+        for param in sorted(params):
+            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
+        list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
+        url = '{0}?action=categories&name={1}&imdb={2}'.format(_url, urllib.quote_plus(prefix), imdb_url)
+        is_folder = True
+        listing.append((url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
+    xbmcplugin.endOfDirectory(_handle)
 
-def list_categories():
+    
+def list_categories(prefix,category_url):
     categories = get_categories()
     listing = []
     for category in categories:
-        prefix = __settings__.getSetting( "prefix" )
         cat = re.sub('_',' ',category)
         if prefix:
             name = "%s %s" % (prefix, re.sub('_',' ',cat))
@@ -966,12 +996,12 @@ def list_categories():
         list_item = xbmcgui.ListItem(label=name)
         genre_icon = get_genre_icon(category)
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
-        (url,params) = get_url(category,'')
-        imdb_url=urllib.quote_plus(url)
+        if re.search(r'genres=,.*?&',category_url):
+            imdb_url = re.sub(r'genres=,(.*?)&',r'genres=%s,\1&' % get_genre(category),category_url)
+        else:
+            imdb_url = "%s&genres=%s," % (category_url,get_genre(category))
+        imdb_url=urllib.quote_plus(imdb_url)
         plot = ""
-        params['server'] = get_server(__settings__.getSetting( "server" ))
-        for param in sorted(params):
-            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
         url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
         is_folder = True
@@ -979,7 +1009,6 @@ def list_categories():
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-    #xbmc.executebuiltin("Container.SetViewMode(%s)" % __settings__.getSetting( "index_view" ))
 
 
 def list_videos(imdb_url):
@@ -1151,6 +1180,13 @@ def router(paramstring):
                 xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,id))
             else:
                 xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/tmdb/%s)" % (type,imdb_id))
+        elif params['action'] == 'categories':
+            name = ''
+            if 'name' in params.keys():
+                name = params['name']
+            if 'imdb' in params.keys():
+                imdb = params['imdb']
+                list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb))
         elif params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
@@ -1178,7 +1214,7 @@ def router(paramstring):
     else:
         if __settings__.getSetting('open_settings') == 'true':
             __settings__.openSettings()
-        list_categories()
+        list_searches()
 
 
 if __name__ == '__main__':
