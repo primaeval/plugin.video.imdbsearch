@@ -907,7 +907,7 @@ def get_videos(url):
                 meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s&title=%s" % (imdbID,episode_id,vlabel)
                 id = episode_id
             else:
-                meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID
+                meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/select' % imdbID
 
             videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':genres,
             'video':meta_url,'episode_id':episode_id,'imdb_id':imdbID,
@@ -948,7 +948,7 @@ def find_episode(imdb_id,episode_id,title):
         season = season_match.group(1)
         episode = season_match.group(2)
         
-    meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'default')
+    meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'select')
     list_item = xbmcgui.ListItem(label=title)
     list_item.setPath(meta_url)
     list_item.setProperty("IsPlayable", "true")
