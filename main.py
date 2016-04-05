@@ -1196,6 +1196,10 @@ def find_crew(name=''):
     r = requests.get(url)
     json = r.json()
     crew = []
+    if 'name_exact' in json:
+        pop = json['name_exact']
+        for p in pop:
+            crew.append((p['name'],p['id']))
     if 'name_popular' in json:
         pop = json['name_popular']
         for p in pop:
@@ -1203,6 +1207,10 @@ def find_crew(name=''):
     if 'name_approx' in json:
         approx = json['name_approx']
         for p in approx:
+            crew.append((p['name'],p['id']))
+    if 'name_substring' in json:
+        pop = json['name_substring']
+        for p in pop:
             crew.append((p['name'],p['id']))
     names = [item[0] for item in crew]
     if names:
