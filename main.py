@@ -23,6 +23,10 @@ else:
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
+def get_background():
+    addon_path = xbmcaddon.Addon().getAddonInfo("path")
+    return os.path.join(addon_path, 'resources', 'img', "background.png")
+
 def get_icon_path(icon_name):
     addon_path = xbmcaddon.Addon().getAddonInfo("path")    
     return os.path.join(addon_path, 'resources', 'img', icon_name+".png")
@@ -970,7 +974,7 @@ def list_searches():
     for (name,imdb_url,params) in searches:
         list_item = xbmcgui.ListItem(label=name)
         genre_icon = get_genre_icon('Any')
-        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
+        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         plot = ""
         params['server'] = server
         for param in sorted(params):
@@ -995,7 +999,7 @@ def list_categories(prefix,category_url):
             name = cat
         list_item = xbmcgui.ListItem(label=name)
         genre_icon = get_genre_icon(category)
-        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
+        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         if re.search(r'genres=,.*?&',category_url):
             imdb_url = re.sub(r'genres=,(.*?)&',r'genres=%s,\1&' % get_genre(category),category_url)
         else:
@@ -1053,7 +1057,7 @@ def list_videos(imdb_url):
         list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'], 
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
-        list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
+        list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb'], 'fanart': get_background()})
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
         context_items = []
@@ -1103,7 +1107,7 @@ def list_videos(imdb_url):
         url = '{0}?action=listing&imdb={1}'.format(_url, urllib.quote_plus(next_url))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
         list_item.setProperty('IsPlayable', 'true')
-        list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png'})
+        list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png', 'fanart': get_background()})
         is_folder = True
         listing.append((url, list_item, is_folder))
         xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
