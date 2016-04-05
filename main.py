@@ -811,6 +811,7 @@ def get_url(category,start):
     ("role", __settings__.getSetting( "crew" )),
     ("plot", __settings__.getSetting( "plot" )),
     ("keywords", __settings__.getSetting( "keywords" )),
+    ("locations", __settings__.getSetting( "locations" )),
     ("start", start),
     ]
     server = get_server(__settings__.getSetting( "server" ))
