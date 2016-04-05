@@ -10,7 +10,7 @@
 	<setting type="sep"/>
 	<setting label="Extra Genre" type="select" id="genres" default="None" values="None|Action|Adventure|Animation|Biography|Comedy|Crime|Documentary|Drama|Family|Fantasy|Film Noir|Game show|History|Horror|Music|Musical|Mystery|News|Reality TV|Romance|Sci-Fi|Sport|Talk Show|Thriller|War|Western"/>
 	<setting type="sep"/>
-	<setting label="Certificate" type="select" id="certificates" default="Any" values="Any|US:G|US:PG|US:PG_13|US:R|US:NC_17"/>
+	<setting label="Certificate" type="select" id="certificates" default="Any" values="Any|US:G|US:PG|US:PG_13|US:R|US:NC_17|GB:U|GB:PG|GB:12|GB:12A|GB:15|GB:18|GB:R18"/>
 
 </category>
 

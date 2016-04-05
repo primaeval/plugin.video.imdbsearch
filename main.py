@@ -106,7 +106,15 @@ def get_certificate(certificate_select):
     "US:PG":"us:pg",
     "US:PG_13":"us:pg_13",
     "US:R":"us:r",
-    "US:NC_17":"us:nc_17"}
+    "US:NC_17":"us:nc_17",
+    "GB:U"  :"gb:u"  ,
+    "GB:PG" :"gb:pg" ,
+    "GB:12" :"gb:12" ,
+    "GB:12A":"gb:12a",
+    "GB:15" :"gb:15" ,
+    "GB:18" :"gb:18" ,
+    "GB:R18":"gb:r18",
+    }
     return certificate_dict[certificate_select]
 
 def get_company(companies_select):
