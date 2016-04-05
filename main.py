@@ -92,6 +92,14 @@ def get_sort(sort_select):
     "My Ratings,Asc":"my_ratings,asc"}
     return sort_dict[sort_select]
 
+def get_color(color_select):
+    color_dict = {"Any":"Any",
+    "Color":"color",
+    "Black and White":"black_and_white",
+    "Colorized":"colorized",
+    "ACES":"aces"}
+    return color_dict[color_select]
+    
 def get_certificate(certificate_select):
     certificate_dict = {"Any":"Any",
     "US:G":"us:g",
@@ -808,6 +816,7 @@ def get_url(category,start):
     ("production_status", get_production_status(__settings__.getSetting( "production_status" ))),
     ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
+    ("colors", get_color(__settings__.getSetting( "colors" ))),
     ("role", __settings__.getSetting( "crew" )),
     ("plot", __settings__.getSetting( "plot" )),
     ("keywords", __settings__.getSetting( "keywords" )),
