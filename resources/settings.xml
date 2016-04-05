@@ -46,6 +46,11 @@
 	<setting label="Runtime Minimum" type="number" id="runtime_low" default=""/>
 	<setting label="Runtime Maximum" type="number" id="runtime_high" default=""/>
 	
+	<setting label="Plot Keywords" type="text" id="plot" default=""/>
+
+	<setting label="Keywords" type="text" id="keywords" default=""/>
+	<setting label="Find Keywords" type="action" action="XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=find_keywords)"/>
+	
 	<setting label="Crew ID" type="text" id="crew" default=""/>
 	<setting label="Find Crew ID" type="action" action="XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=find_crew)"/>
 </category>

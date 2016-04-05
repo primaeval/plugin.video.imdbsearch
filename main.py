@@ -809,6 +809,8 @@ def get_url(category,start):
     ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
     ("role", __settings__.getSetting( "crew" )),
+    ("plot", __settings__.getSetting( "plot" )),
+    ("keywords", __settings__.getSetting( "keywords" )),
     ("start", start),
     ]
     server = get_server(__settings__.getSetting( "server" ))
@@ -1199,11 +1201,49 @@ def find_crew(name=''):
         __settings__.setSetting('crew',id)
     else:
         dialog.notification('IMDB:','Nothing Found!')
-    
-    
+
+def find_keywords(keyword=''):
+    dialog = xbmcgui.Dialog()
+    if not keyword:
+        keyword = dialog.input('Search for keyword', type=xbmcgui.INPUT_ALPHANUM)
+    dialog.notification('IMDB:','Finding keyword matches...')
+    if not keyword:
+        dialog.notification('IMDB:','No keyword!')
+        return
+    url = "http://www.imdb.com/xml/find?json=1&nr=1&q=%s&kw=on" % urllib.quote_plus(keyword)
+    r = requests.get(url)
+    json = r.json()
+    keywords = []
+    if 'keyword_exact' in json:
+        pop = json['keyword_exact']
+        for p in pop:
+            keywords.append((p['description'],p['keyword']))    
+    if 'keyword_popular' in json:
+        pop = json['keyword_popular']
+        for p in pop:
+            keywords.append((p['description'],p['keyword']))
+    if 'keyword_approx' in json:
+        approx = json['keyword_approx']
+        for p in approx:
+            keywords.append((p['description'],p['keyword']))
+    if 'keyword_substring' in json:
+        approx = json['keyword_substring']
+        for p in approx:
+            keywords.append((p['description'],p['keyword']))
+    names = [item[0] for item in keywords]
+    if keywords:
+        index = dialog.select('Pick keywords member',names)
+        id = keywords[index][1]
+        __settings__.setSetting('keywords',id)
+    else:
+        dialog.notification('IMDB:','Nothing Found!')
+        
+
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
+        if params['action'] == 'find_keywords':
+            find_keywords()
         if params['action'] == 'find_crew':
             find_crew()
         if params['action'] == 'meta_settings':
