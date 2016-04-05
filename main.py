@@ -808,6 +808,7 @@ def get_url(category,start):
     ("production_status", get_production_status(__settings__.getSetting( "production_status" ))),
     ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
+    ("role", __settings__.getSetting( "crew" )),
     ("start", start),
     ]
     server = get_server(__settings__.getSetting( "server" ))
@@ -1171,10 +1172,40 @@ def add_to_trakt_watchlist(type,imdb_id,title):
         dialog = xbmcgui.Dialog()
         dialog.notification("Trakt: add to watchlist",title)
     
+def find_crew(name=''):
+    dialog = xbmcgui.Dialog()
+    if not name:
+        name = dialog.input('Search for crew (actor, director etc)', type=xbmcgui.INPUT_ALPHANUM)
+    dialog.notification('IMDB:','Finding crew details...')
+    if not name:
+        dialog.notification('IMDB:','No name!')
+        return
+    url = "http://www.imdb.com/xml/find?json=1&nr=1&q=%s&nm=on" % urllib.quote_plus(name)
+    r = requests.get(url)
+    json = r.json()
+    crew = []
+    if 'name_popular' in json:
+        pop = json['name_popular']
+        for p in pop:
+            crew.append((p['name'],p['id']))
+    if 'name_approx' in json:
+        approx = json['name_approx']
+        for p in approx:
+            crew.append((p['name'],p['id']))
+    names = [item[0] for item in crew]
+    if names:
+        index = dialog.select('Pick crew member',names)
+        id = crew[index][1]
+        __settings__.setSetting('crew',id)
+    else:
+        dialog.notification('IMDB:','Nothing Found!')
+    
     
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
+        if params['action'] == 'find_crew':
+            find_crew()
         if params['action'] == 'meta_settings':
             xbmcaddon.Addon(id='plugin.video.meta').openSettings()        
         elif params['action'] == 'library':

@@ -11,6 +11,7 @@
 	<setting label="Extra Genre" type="select" id="genres" default="None" values="None|Action|Adventure|Animation|Biography|Comedy|Crime|Documentary|Drama|Family|Fantasy|Film Noir|Game show|History|Horror|Music|Musical|Mystery|News|Reality TV|Romance|Sci-Fi|Sport|Talk Show|Thriller|War|Western"/>
 
 	<setting label="Certificate" type="select" id="certificates" default="Any" values="Any|US:G|US:PG|US:PG_13|US:R|US:NC_17"/>
+
 </category>
 
 <category label="Popularity">
@@ -44,6 +45,9 @@
 	
 	<setting label="Runtime Minimum" type="number" id="runtime_low" default=""/>
 	<setting label="Runtime Maximum" type="number" id="runtime_high" default=""/>
+	
+	<setting label="Crew ID" type="text" id="crew" default=""/>
+	<setting label="Find Crew ID" type="action" action="XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=find_crew)"/>
 </category>
 
 <category label="Display">
