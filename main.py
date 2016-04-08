@@ -65,12 +65,15 @@ def get_genre_icon(genre):
         return get_icon_path(icons[genre])
     return "DefaultVideo.png"
 
-def get_server(server_select):
+def get_server(server_select, reverse=False):
     server_dict = {"Original Title":"akas",
     "Normal":"www"}
-    return server_dict[server_select]
+    if reverse:
+        return find_key(server_dict,server_select)
+    else:
+        return server_dict[server_select]
 
-def get_sort(sort_select):
+def get_sort(sort_select, reverse=False):
     sort_dict = {"Any":"Any",
     "Moviemeter,Asc":"moviemeter,asc",
     "Moviemeter,Desc":"moviemeter,desc",
@@ -90,18 +93,24 @@ def get_sort(sort_select):
     "Release Date US,Desc":"release_date_us,desc",
     "My Ratings":"my_ratings",
     "My Ratings,Asc":"my_ratings,asc"}
-    return sort_dict[sort_select]
+    if reverse:
+        return find_key(sort_dict,sort_select)
+    else:
+        return sort_dict[sort_select]
 
-def get_color(color_select):
+def get_color(color_select, reverse=False):
     color_dict = {"Any":"Any",
     "Color":"color",
     "Black and White":"black_and_white",
     "Colorized":"colorized",
     "ACES":"aces"}
-    return color_dict[color_select]
+    if reverse:
+        return find_key(color_dict,color_select)
+    else:
+        return color_dict[color_select]
     
-def get_certificate(certificate_select):
-    certificate_dict = {"Any":"Any",
+def get_certificates(certificates_select, reverse=False):
+    certificates_dict = {"Any":"Any",
     "US:G":"us:g",
     "US:PG":"us:pg",
     "US:PG_13":"us:pg_13",
@@ -115,9 +124,12 @@ def get_certificate(certificate_select):
     "GB:18" :"gb:18" ,
     "GB:R18":"gb:r18",
     }
-    return certificate_dict[certificate_select]
+    if reverse:
+        return find_key(certificates_dict,certificates_select)
+    else:
+        return certificates_dict[certificates_select]
 
-def get_company(companies_select):
+def get_company(companies_select, reverse=False):
     companies_dict = {"Any":"Any",
     "Fox":"fox",
     "Columbia":"columbia",
@@ -127,9 +139,12 @@ def get_company(companies_select):
     "Universal":"universal",
     "Disney":"disney",
     "Warner":"warner"}
-    return companies_dict[companies_select]
+    if reverse:
+        return find_key(server_dict,server_select)
+    else:
+        return server_dict[server_select]
 
-def get_production_status(production_status_select):
+def get_production_status(production_status_select, reverse=False):
     production_status_dict = {"Any":"*",
     "Released":"released",
     "Post Production":"post production",
@@ -147,9 +162,12 @@ def get_production_status(production_status_select):
     "Indefinitely Delayed":"indefinitely delayed",
     "Active":"active",
     "Unknown":"unknown"}
-    return production_status_dict[production_status_select]
+    if reverse:
+        return find_key(production_status_dict,production_status_select)
+    else:
+        return production_status_dict[production_status_select]
 
-def get_group(groups_select):
+def get_groups(groups_select, reverse=False):
     groups_dict = {"Any":"*",
     "Top 100":"top_100",
     "Top 250":"top_250",
@@ -169,9 +187,12 @@ def get_group(groups_select):
     "Bottom 100":"bottom_100",
     "Bottom 250":"bottom_250",
     "Bottom 1000":"bottom_1000"}
-    return groups_dict[groups_select]
+    if reverse:
+        return find_key(groups_dict,groups_select)
+    else:
+        return groups_dict[groups_select]
 
-def get_genre(genres_select):
+def get_genre(genres_select, reverse=False):
     genres_dict = {"Any":"Any",
     "None":"",
     "Action":"action",
@@ -200,9 +221,18 @@ def get_genre(genres_select):
     "Thriller":"thriller",
     "War":"war",
     "Western":"western"}
-    return genres_dict[genres_select]
+    if reverse:
+        return find_key(genres_dict,genres_select)
+    else:
+        return genres_dict[genres_select]
+    
+def find_key(dict,value):
+    for k,v in dict.iteritems():
+        if v == value:
+            return k
+    return ''
 
-def get_title_type(title_type_select):
+def get_title_type(title_type_select, reverse=False):
     title_type_dict = {'Feature':'feature',
     'TV Movie':'tv_movie',
     'TV Series':'tv_series',
@@ -213,9 +243,12 @@ def get_title_type(title_type_select):
     'Game':'game',
     'Short':'short',
     'Video':'video'}
-    return title_type_dict[title_type_select]
+    if reverse:
+        return find_key(title_type_dict,title_type_select)
+    else:
+        return title_type_dict[title_type_select]
 
-def get_languages(languages_select):
+def get_languages(languages_select, reverse=False):
     languages_dict = {"Any":"*",
     "Arabic":"ar",
     "Bulgarian":"bg",
@@ -528,9 +561,12 @@ def get_languages(languages_select):
     "Yiddish":"yi",
     "Yoruba":"yo",
     "Zulu":"zu"}
-    return languages_dict[languages_select]
+    if reverse:
+        return find_key(languages_dict,languages_select)
+    else:
+        return languages_dict[languages_select]
 
-def get_countries(countries_select):
+def get_countries(countries_select, reverse=False):
     countries_dict = {"Any":"*",
     "Argentina":"ar",
     "Australia":"au",
@@ -793,7 +829,10 @@ def get_countries(countries_select):
     "Zaire":"zrcd",
     "Zambia":"zm",
     "Zimbabwe":"zw"}
-    return countries_dict[countries_select]
+    if reverse:
+        return find_key(countries_dict,countries_select)
+    else:
+        return countries_dict[countries_select]
 
 def get_searches():
     #TODO persistent searches
@@ -804,6 +843,82 @@ def get_categories():
     "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
     "Sci-Fi","Sport","Talk Show","Thriller","War","Western"]
 
+def favourite_settings(prefix,imdb_url):
+    if 'prefix':
+        __settings__.setSetting( "prefix" , prefix)
+    params = dict(parse_qsl(urlparse.urlparse(imdb_url)[4]))
+    if 'count' in params:
+        __settings__.setSetting( "count" , params['count'])
+    if 'title' in params:
+        __settings__.setSetting( "title" , params['title'])
+    if 'title_type' in params:
+        __settings__.setSetting( "title_type" , get_title_type(params['title_type'],True))
+    if 'release_date' in params:
+        release_date = params['release_date'].split(',')
+        if release_date[0]:
+            __settings__.setSetting( "release_date_start" , release_date[0])
+        if release_date[1]:
+            __settings__.setSetting( "release_date_end" , release_date[1])
+    if 'user_rating' in params:
+        user_rating = params['user_rating'].split(',')
+        if user_rating[0]:
+            __settings__.setSetting( "user_rating_low" , user_rating[0])
+        if user_rating[1]:
+            __settings__.setSetting( "user_rating_high" , user_rating[1])
+    if 'num_votes' in params:
+        num_votes = params['num_votes'].split(',')
+        if num_votes[0]:
+            __settings__.setSetting( "num_votes_low" , num_votes[0])
+        if num_votes[1]:
+            __settings__.setSetting( "num_votes_high" , num_votes[1])
+    if 'genres' in params:
+        genres = params['genres'].split(',')
+        if genres[1]:
+            __settings__.setSetting( "genres" , get_genre(genres[1],True))
+    if 'groups' in params:
+        __settings__.setSetting( "groups" , get_groups(params['groups'],True))
+    if 'companies' in params:
+        __settings__.setSetting( "companies" , get_companies(params['companies'],True))
+    if 'boxoffice_gross_us' in params:
+        boxoffice_gross_us = params['boxoffice_gross_us'].split(',')
+        if boxoffice_gross_us[0]:
+            __settings__.setSetting( "boxoffice_gross_us_low" , boxoffice_gross_us[0])
+        if boxoffice_gross_us[1]:
+            __settings__.setSetting( "boxoffice_gross_us_high" , boxoffice_gross_us[1])
+    if 'sort' in params:
+        __settings__.setSetting( "sort" , get_sort(params['sort'],True))
+    if 'certificates' in params:
+        __settings__.setSetting( "certificates" , get_certificates(params['certificates'],True))
+    if 'countries' in params:
+        __settings__.setSetting( "countries" , get_countries(params['countries'],True))
+    if 'languages' in params:
+        __settings__.setSetting( "languages" , get_languages(params['languages'],True))
+    if 'moviemeter' in params:
+        moviemeter = params['moviemeter'].split(',')
+        if moviemeter[0]:
+            __settings__.setSetting( "moviemeter_low" , moviemeter[0])
+        if moviemeter[1]:
+            __settings__.setSetting( "moviemeter_high" , moviemeter[1])
+    if 'production_status' in params:
+        __settings__.setSetting( "production_status" , get_production_status(params['production_status'],True))
+    if 'runtime' in params:
+        runtime = params['runtime'].split(',')
+        if runtime[0]:
+            __settings__.setSetting( "runtime_low" , runtime[0])
+        if runtime[1]:
+            __settings__.setSetting( "runtime_high" , runtime[1])
+    if 'colors' in params:
+        __settings__.setSetting( "colors" , get_colors(params['colors'],True))
+    if 'role' in params:
+        __settings__.setSetting( "crew" , get_colors(params['role'],True))
+    if 'plot' in params:
+        __settings__.setSetting( "plot" , params['plot'])
+    if 'keywords' in params:
+        __settings__.setSetting( "keywords" , params['keywords'])
+    if 'locations' in params:
+        __settings__.setSetting( "locations" , params['locations'])
+
+    
 def get_url(category,start):
     imdb_query = [
     ("count", __settings__.getSetting( "count" )),
@@ -813,7 +928,7 @@ def get_url(category,start):
     ("user_rating", "%.1f,%.1f" % (float(__settings__.getSetting( "user_rating_low" )),float(__settings__.getSetting( "user_rating_high" )))),
     ("num_votes", "%s,%s" % (__settings__.getSetting( "num_votes_low" ),__settings__.getSetting( "num_votes_high" ))),
     ("genres", "%s,%s" % (get_genre(category),get_genre(__settings__.getSetting( "genres" )))),   
-    ("groups", "%s" % (get_group(__settings__.getSetting( "groups" )))),  
+    ("groups", "%s" % (get_groups(__settings__.getSetting( "groups" )))),  
     ("companies", get_company(__settings__.getSetting( "companies" ))),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
@@ -1007,7 +1122,7 @@ def list_searches():
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-
+    
     
 def list_categories(prefix,category_url):
     categories = get_categories()
@@ -1019,6 +1134,10 @@ def list_categories(prefix,category_url):
         else:
             name = cat
         list_item = xbmcgui.ListItem(label=name)
+        context_items = []
+        context_items.append(('Reload Settings From Favourite', 
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s)" % (urllib.quote_plus(prefix), urllib.quote_plus(category_url))))
+        list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         if re.search(r'genres=,.*?&',category_url):
@@ -1291,6 +1410,13 @@ def router(paramstring):
             if 'imdb' in params.keys():
                 imdb = params['imdb']
                 list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb))
+        elif params['action'] == 'favourite_settings':
+            prefix = ''
+            if 'prefix' in params.keys():
+                prefix = params['prefix']
+            if 'imdb' in params.keys():
+                imdb = params['imdb']
+                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb))
         elif params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
