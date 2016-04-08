@@ -843,80 +843,11 @@ def get_categories():
     "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
     "Sci-Fi","Sport","Talk Show","Thriller","War","Western"]
 
-def favourite_settings(prefix,imdb_url):
-    if 'prefix':
-        __settings__.setSetting( "prefix" , prefix)
-    params = dict(parse_qsl(urlparse.urlparse(imdb_url)[4]))
-    if 'count' in params:
-        __settings__.setSetting( "count" , params['count'])
-    if 'title' in params:
-        __settings__.setSetting( "title" , params['title'])
-    if 'title_type' in params:
-        __settings__.setSetting( "title_type" , get_title_type(params['title_type'],True))
-    if 'release_date' in params:
-        release_date = params['release_date'].split(',')
-        if release_date[0]:
-            __settings__.setSetting( "release_date_start" , release_date[0])
-        if release_date[1]:
-            __settings__.setSetting( "release_date_end" , release_date[1])
-    if 'user_rating' in params:
-        user_rating = params['user_rating'].split(',')
-        if user_rating[0]:
-            __settings__.setSetting( "user_rating_low" , user_rating[0])
-        if user_rating[1]:
-            __settings__.setSetting( "user_rating_high" , user_rating[1])
-    if 'num_votes' in params:
-        num_votes = params['num_votes'].split(',')
-        if num_votes[0]:
-            __settings__.setSetting( "num_votes_low" , num_votes[0])
-        if num_votes[1]:
-            __settings__.setSetting( "num_votes_high" , num_votes[1])
-    if 'genres' in params:
-        genres = params['genres'].split(',')
-        if genres[1]:
-            __settings__.setSetting( "genres" , get_genre(genres[1],True))
-    if 'groups' in params:
-        __settings__.setSetting( "groups" , get_groups(params['groups'],True))
-    if 'companies' in params:
-        __settings__.setSetting( "companies" , get_companies(params['companies'],True))
-    if 'boxoffice_gross_us' in params:
-        boxoffice_gross_us = params['boxoffice_gross_us'].split(',')
-        if boxoffice_gross_us[0]:
-            __settings__.setSetting( "boxoffice_gross_us_low" , boxoffice_gross_us[0])
-        if boxoffice_gross_us[1]:
-            __settings__.setSetting( "boxoffice_gross_us_high" , boxoffice_gross_us[1])
-    if 'sort' in params:
-        __settings__.setSetting( "sort" , get_sort(params['sort'],True))
-    if 'certificates' in params:
-        __settings__.setSetting( "certificates" , get_certificates(params['certificates'],True))
-    if 'countries' in params:
-        __settings__.setSetting( "countries" , get_countries(params['countries'],True))
-    if 'languages' in params:
-        __settings__.setSetting( "languages" , get_languages(params['languages'],True))
-    if 'moviemeter' in params:
-        moviemeter = params['moviemeter'].split(',')
-        if moviemeter[0]:
-            __settings__.setSetting( "moviemeter_low" , moviemeter[0])
-        if moviemeter[1]:
-            __settings__.setSetting( "moviemeter_high" , moviemeter[1])
-    if 'production_status' in params:
-        __settings__.setSetting( "production_status" , get_production_status(params['production_status'],True))
-    if 'runtime' in params:
-        runtime = params['runtime'].split(',')
-        if runtime[0]:
-            __settings__.setSetting( "runtime_low" , runtime[0])
-        if runtime[1]:
-            __settings__.setSetting( "runtime_high" , runtime[1])
-    if 'colors' in params:
-        __settings__.setSetting( "colors" , get_colors(params['colors'],True))
-    if 'role' in params:
-        __settings__.setSetting( "crew" , get_colors(params['role'],True))
-    if 'plot' in params:
-        __settings__.setSetting( "plot" , params['plot'])
-    if 'keywords' in params:
-        __settings__.setSetting( "keywords" , params['keywords'])
-    if 'locations' in params:
-        __settings__.setSetting( "locations" , params['locations'])
+    
+def favourite_settings(prefix,imdb_url,settings_url):
+    settings = dict(parse_qsl(urllib.unquote_plus(settings_url)))
+    for s in settings:
+        __settings__.setSetting(s,settings[s])
 
     
 def get_url(category,start):
@@ -1095,10 +1026,12 @@ def find_episode(imdb_id,episode_id,title):
     list_item.setInfo(type='Video', infoLabels={'Title': title})
     xbmcplugin.setResolvedUrl(_handle, True, listitem=list_item)
     
-    
+
 def list_searches():
+    settings_url = urllib.quote_plus(get_settings_url())
+    params = dict(parse_qsl(urllib.unquote_plus(settings_url)))
     searches = get_searches()
-    (url,params,server) = get_url('None','')
+    (url,paramsx,server) = get_url('None','')
     imdb_url=urllib.quote_plus(url)
     prefix = __settings__.getSetting( "prefix" )
     if not prefix:
@@ -1112,21 +1045,62 @@ def list_searches():
         genre_icon = get_genre_icon('Any')
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         plot = ""
-        params['server'] = server
+        #params['server'] = server
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
-        url = '{0}?action=categories&name={1}&imdb={2}'.format(_url, urllib.quote_plus(prefix), imdb_url)
+        url = '{0}?action=categories&name={1}&imdb={2}&settings={3}'.format(_url, urllib.quote_plus(prefix), imdb_url,settings_url)
         is_folder = True
+        context_items = []
+        context_items.append(('Information', 'XBMC.Action(Info)'))
+        list_item.addContextMenuItems(context_items,replaceItems=False)
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
     
+def get_settings_url():
+    settings = {}
+    setting_keys = [
+    "boxoffice_gross_us_high",
+    "boxoffice_gross_us_low",
+    "certificates",
+    "companies",
+    "count",
+    "countries",
+    "genres",
+    "groups",
+    "index_view",
+    "languages",
+    "moviemeter_high",
+    "moviemeter_low",
+    "num_votes_high",
+    "num_votes_low",
+    "prefix",
+    "production_status",
+    "release_date_end",
+    "release_date_start",
+    "runtime_high",
+    "runtime_low",
+    "server",
+    "sort",
+    "title",
+    "title_type",
+    "tv_view",
+    "user_rating_high",
+    "user_rating_low",
+    "video_view",
+    ]
+    for setting in setting_keys:
+        settings[setting] = __settings__.getSetting(setting)
+    settings_url = urllib.urlencode(settings)
+    return settings_url
     
-def list_categories(prefix,category_url):
+def list_categories(prefix,category_url,settings_url):
+    params = dict(parse_qsl(urllib.unquote_plus(settings_url)))
     categories = get_categories()
     listing = []
+    genre = params["genres"]
     for category in categories:
         cat = re.sub('_',' ',category)
         if prefix:
@@ -1135,8 +1109,10 @@ def list_categories(prefix,category_url):
             name = cat
         list_item = xbmcgui.ListItem(label=name)
         context_items = []
+        context_items.append(('Information', 'XBMC.Action(Info)'))
         context_items.append(('Reload Settings From Favourite', 
-        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s)" % (urllib.quote_plus(prefix), urllib.quote_plus(category_url))))
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s&settings=%s)" % 
+        (urllib.quote_plus(prefix), urllib.quote_plus(category_url),urllib.quote_plus(settings_url))))
         list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
@@ -1145,9 +1121,13 @@ def list_categories(prefix,category_url):
         else:
             imdb_url = "%s&genres=%s," % (category_url,get_genre(category))
         imdb_url=urllib.quote_plus(imdb_url)
+        settings_url = urllib.quote_plus(settings_url)
         plot = ""
+        params["genres"] = "%s,%s" % (get_genre(category),genre)
+        for param in sorted(params):
+            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
-        url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
+        url = '{0}?action=listing&category={1}&imdb={2}&settings={3}'.format(_url, category,imdb_url,settings_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -1412,16 +1392,20 @@ def router(paramstring):
             name = ''
             if 'name' in params.keys():
                 name = params['name']
+            if 'settings' in params.keys():
+                settings = params['settings']
             if 'imdb' in params.keys():
                 imdb = params['imdb']
-                list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb))
+                list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb),urllib.unquote_plus(settings))
         elif params['action'] == 'favourite_settings':
             prefix = ''
             if 'prefix' in params.keys():
                 prefix = params['prefix']
+            if 'settings' in params.keys():
+                settings = params['settings']
             if 'imdb' in params.keys():
                 imdb = params['imdb']
-                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb))
+                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb),urllib.unquote_plus(settings))
         elif params['action'] == 'favourite':
             name = ''
             if 'name' in params.keys():
