@@ -8,7 +8,7 @@ import xbmcgui
 import xbmcaddon
 import sys
 import os
-
+xbmc.log(repr(sys.argv))
 import requests
 import re
 import urllib,urlparse
@@ -843,7 +843,18 @@ def get_categories():
     "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
     "Sci-Fi","Sport","Talk Show","Thriller","War","Western"]
 
-def favourite_settings(prefix,imdb_url):
+    
+def favourite_settings(prefix,imdb_url,settings_url):
+    xbmc.log("RELOAD")
+    xbmc.log(settings_url)
+    
+    settings = dict(parse_qsl(urllib.unquote_plus(settings_url)))
+    xbmc.log(repr(settings))
+    for s in settings:
+        xbmc.log(s)
+        __settings__.setSetting(s,settings[s])
+    
+def favourite_settings1(prefix,imdb_url):
     if 'prefix':
         __settings__.setSetting( "prefix" , prefix)
     params = dict(parse_qsl(urlparse.urlparse(imdb_url)[4]))
@@ -1097,7 +1108,7 @@ def find_episode(imdb_id,episode_id,title):
     
     
 def list_searches():
-    params_url = urllib.quote_plus(get_params_url())
+    settings_url = urllib.quote_plus(get_settings_url())
     searches = get_searches()
     (url,params,server) = get_url('None','')
     imdb_url=urllib.quote_plus(url)
@@ -1117,16 +1128,16 @@ def list_searches():
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
-        url = '{0}?action=categories&name={1}&imdb={2}&params={3}'.format(_url, urllib.quote_plus(prefix), imdb_url,params_url)
+        url = '{0}?action=categories&name={1}&imdb={2}&settings={3}'.format(_url, urllib.quote_plus(prefix), imdb_url,settings_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
     
-def get_params_url():
-    params = {}
-    param_keys = [
+def get_settings_url():
+    settings = {}
+    setting_keys = [
     "boxoffice_gross_us_high",
     "boxoffice_gross_us_low",
     "certificates",
@@ -1156,14 +1167,14 @@ def get_params_url():
     "user_rating_low",
     "video_view",
     ]
-    for param in param_keys:
-        params[param] = __settings__.getSetting(param)
-    params_url = urllib.urlencode(params)
-    xbmc.log(params_url)
-    return params_url
+    for setting in setting_keys:
+        settings[setting] = __settings__.getSetting(setting)
+    settings_url = urllib.urlencode(settings)
+    xbmc.log(settings_url)
+    return settings_url
     
-def list_categories(prefix,category_url):
-    params_url = urllib.quote_plus(get_params_url())
+def list_categories(prefix,category_url,settings_url):
+    #settings_url = urllib.quote_plus(get_settings_url())
     categories = get_categories()
     listing = []
     for category in categories:
@@ -1175,8 +1186,8 @@ def list_categories(prefix,category_url):
         list_item = xbmcgui.ListItem(label=name)
         context_items = []
         context_items.append(('Reload Settings From Favourite', 
-        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s)" % 
-        (urllib.quote_plus(prefix), urllib.quote_plus(category_url))))
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s&settings=%s)" % 
+        (urllib.quote_plus(prefix), urllib.quote_plus(category_url),urllib.quote_plus(settings_url))))
         list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
@@ -1185,9 +1196,10 @@ def list_categories(prefix,category_url):
         else:
             imdb_url = "%s&genres=%s," % (category_url,get_genre(category))
         imdb_url=urllib.quote_plus(imdb_url)
+        settings_url = urllib.quote_plus(settings_url)
         plot = ""
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
-        url = '{0}?action=listing&category={1}&imdb={2}&params={3}'.format(_url, category,imdb_url,params_url)
+        url = '{0}?action=listing&category={1}&imdb={2}&settings={3}'.format(_url, category,imdb_url,settings_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -1452,16 +1464,20 @@ def router(paramstring):
             name = ''
             if 'name' in params.keys():
                 name = params['name']
+            if 'settings' in params.keys():
+                settings = params['settings']
             if 'imdb' in params.keys():
                 imdb = params['imdb']
-                list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb))
+                list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb),urllib.unquote_plus(settings))
         elif params['action'] == 'favourite_settings':
             prefix = ''
             if 'prefix' in params.keys():
                 prefix = params['prefix']
+            if 'settings' in params.keys():
+                settings = params['settings']
             if 'imdb' in params.keys():
                 imdb = params['imdb']
-                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb))
+                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb),urllib.unquote_plus(settings))
         elif params['action'] == 'favourite':
             name = ''
             if 'name' in params.keys():
