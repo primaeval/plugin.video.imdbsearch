@@ -1228,6 +1228,8 @@ def list_videos(imdb_url):
         if __settings__.getSetting('default_context_menu') == 'true':
             list_item.addContextMenuItems(context_items,replaceItems=False)
         else:
+            context_items.append(('Add to Favourites', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite&name=%s&thumb=%s&cmd=%s)" % 
+            (video['name'],video['thumb'],video['video'])))
             list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
@@ -1382,7 +1384,10 @@ def find_keywords(keyword=''):
         __settings__.setSetting('keywords',id)
     else:
         dialog.notification('IMDB:','Nothing Found!')
+
         
+def favourite(name,thumb,cmd):
+    result = loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Favourites.AddFavourite", "params": {"title":"%s", "type":"media", "path":"%s", "thumbnail":"%s"}, "id": 1}' % (name, cmd, thumb)))
 
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
@@ -1417,6 +1422,16 @@ def router(paramstring):
             if 'imdb' in params.keys():
                 imdb = params['imdb']
                 favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb))
+        elif params['action'] == 'favourite':
+            name = ''
+            if 'name' in params.keys():
+                name = params['name']
+            thumb = ''
+            if 'thumb' in params.keys():
+                thumb = params['thumb']
+            if 'cmd' in params.keys():
+                cmd = params['cmd']
+                favourite(urllib.unquote_plus(name),urllib.unquote_plus(thumb),urllib.unquote_plus(cmd))
         elif params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
