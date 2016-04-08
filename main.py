@@ -23,6 +23,10 @@ else:
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
+def get_background():
+    addon_path = xbmcaddon.Addon().getAddonInfo("path")
+    return os.path.join(addon_path, 'resources', 'img', "background.png")
+
 def get_icon_path(icon_name):
     addon_path = xbmcaddon.Addon().getAddonInfo("path")    
     return os.path.join(addon_path, 'resources', 'img', icon_name+".png")
@@ -61,12 +65,15 @@ def get_genre_icon(genre):
         return get_icon_path(icons[genre])
     return "DefaultVideo.png"
 
-def get_server(server_select):
+def get_server(server_select, reverse=False):
     server_dict = {"Original Title":"akas",
     "Normal":"www"}
-    return server_dict[server_select]
+    if reverse:
+        return find_key(server_dict,server_select)
+    else:
+        return server_dict[server_select]
 
-def get_sort(sort_select):
+def get_sort(sort_select, reverse=False):
     sort_dict = {"Any":"Any",
     "Moviemeter,Asc":"moviemeter,asc",
     "Moviemeter,Desc":"moviemeter,desc",
@@ -86,18 +93,43 @@ def get_sort(sort_select):
     "Release Date US,Desc":"release_date_us,desc",
     "My Ratings":"my_ratings",
     "My Ratings,Asc":"my_ratings,asc"}
-    return sort_dict[sort_select]
+    if reverse:
+        return find_key(sort_dict,sort_select)
+    else:
+        return sort_dict[sort_select]
 
-def get_certificate(certificate_select):
-    certificate_dict = {"Any":"Any",
+def get_color(color_select, reverse=False):
+    color_dict = {"Any":"Any",
+    "Color":"color",
+    "Black and White":"black_and_white",
+    "Colorized":"colorized",
+    "ACES":"aces"}
+    if reverse:
+        return find_key(color_dict,color_select)
+    else:
+        return color_dict[color_select]
+    
+def get_certificates(certificates_select, reverse=False):
+    certificates_dict = {"Any":"Any",
     "US:G":"us:g",
     "US:PG":"us:pg",
     "US:PG_13":"us:pg_13",
     "US:R":"us:r",
-    "US:NC_17":"us:nc_17"}
-    return certificate_dict[certificate_select]
+    "US:NC_17":"us:nc_17",
+    "GB:U"  :"gb:u"  ,
+    "GB:PG" :"gb:pg" ,
+    "GB:12" :"gb:12" ,
+    "GB:12A":"gb:12a",
+    "GB:15" :"gb:15" ,
+    "GB:18" :"gb:18" ,
+    "GB:R18":"gb:r18",
+    }
+    if reverse:
+        return find_key(certificates_dict,certificates_select)
+    else:
+        return certificates_dict[certificates_select]
 
-def get_company(companies_select):
+def get_company(companies_select, reverse=False):
     companies_dict = {"Any":"Any",
     "Fox":"fox",
     "Columbia":"columbia",
@@ -107,9 +139,12 @@ def get_company(companies_select):
     "Universal":"universal",
     "Disney":"disney",
     "Warner":"warner"}
-    return companies_dict[companies_select]
+    if reverse:
+        return find_key(companies_dict,companies_select)
+    else:
+        return companies_dict[companies_select]
 
-def get_production_status(production_status_select):
+def get_production_status(production_status_select, reverse=False):
     production_status_dict = {"Any":"*",
     "Released":"released",
     "Post Production":"post production",
@@ -127,9 +162,12 @@ def get_production_status(production_status_select):
     "Indefinitely Delayed":"indefinitely delayed",
     "Active":"active",
     "Unknown":"unknown"}
-    return production_status_dict[production_status_select]
+    if reverse:
+        return find_key(production_status_dict,production_status_select)
+    else:
+        return production_status_dict[production_status_select]
 
-def get_group(groups_select):
+def get_groups(groups_select, reverse=False):
     groups_dict = {"Any":"*",
     "Top 100":"top_100",
     "Top 250":"top_250",
@@ -149,9 +187,12 @@ def get_group(groups_select):
     "Bottom 100":"bottom_100",
     "Bottom 250":"bottom_250",
     "Bottom 1000":"bottom_1000"}
-    return groups_dict[groups_select]
+    if reverse:
+        return find_key(groups_dict,groups_select)
+    else:
+        return groups_dict[groups_select]
 
-def get_genre(genres_select):
+def get_genre(genres_select, reverse=False):
     genres_dict = {"Any":"Any",
     "None":"",
     "Action":"action",
@@ -180,9 +221,18 @@ def get_genre(genres_select):
     "Thriller":"thriller",
     "War":"war",
     "Western":"western"}
-    return genres_dict[genres_select]
+    if reverse:
+        return find_key(genres_dict,genres_select)
+    else:
+        return genres_dict[genres_select]
+    
+def find_key(dict,value):
+    for k,v in dict.iteritems():
+        if v == value:
+            return k
+    return ''
 
-def get_title_type(title_type_select):
+def get_title_type(title_type_select, reverse=False):
     title_type_dict = {'Feature':'feature',
     'TV Movie':'tv_movie',
     'TV Series':'tv_series',
@@ -193,9 +243,12 @@ def get_title_type(title_type_select):
     'Game':'game',
     'Short':'short',
     'Video':'video'}
-    return title_type_dict[title_type_select]
+    if reverse:
+        return find_key(title_type_dict,title_type_select)
+    else:
+        return title_type_dict[title_type_select]
 
-def get_languages(languages_select):
+def get_languages(languages_select, reverse=False):
     languages_dict = {"Any":"*",
     "Arabic":"ar",
     "Bulgarian":"bg",
@@ -508,9 +561,12 @@ def get_languages(languages_select):
     "Yiddish":"yi",
     "Yoruba":"yo",
     "Zulu":"zu"}
-    return languages_dict[languages_select]
+    if reverse:
+        return find_key(languages_dict,languages_select)
+    else:
+        return languages_dict[languages_select]
 
-def get_countries(countries_select):
+def get_countries(countries_select, reverse=False):
     countries_dict = {"Any":"*",
     "Argentina":"ar",
     "Australia":"au",
@@ -773,7 +829,10 @@ def get_countries(countries_select):
     "Zaire":"zrcd",
     "Zambia":"zm",
     "Zimbabwe":"zw"}
-    return countries_dict[countries_select]
+    if reverse:
+        return find_key(countries_dict,countries_select)
+    else:
+        return countries_dict[countries_select]
 
 def get_searches():
     #TODO persistent searches
@@ -784,6 +843,82 @@ def get_categories():
     "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
     "Sci-Fi","Sport","Talk Show","Thriller","War","Western"]
 
+def favourite_settings(prefix,imdb_url):
+    if 'prefix':
+        __settings__.setSetting( "prefix" , prefix)
+    params = dict(parse_qsl(urlparse.urlparse(imdb_url)[4]))
+    if 'count' in params:
+        __settings__.setSetting( "count" , params['count'])
+    if 'title' in params:
+        __settings__.setSetting( "title" , params['title'])
+    if 'title_type' in params:
+        __settings__.setSetting( "title_type" , get_title_type(params['title_type'],True))
+    if 'release_date' in params:
+        release_date = params['release_date'].split(',')
+        if release_date[0]:
+            __settings__.setSetting( "release_date_start" , release_date[0])
+        if release_date[1]:
+            __settings__.setSetting( "release_date_end" , release_date[1])
+    if 'user_rating' in params:
+        user_rating = params['user_rating'].split(',')
+        if user_rating[0]:
+            __settings__.setSetting( "user_rating_low" , user_rating[0])
+        if user_rating[1]:
+            __settings__.setSetting( "user_rating_high" , user_rating[1])
+    if 'num_votes' in params:
+        num_votes = params['num_votes'].split(',')
+        if num_votes[0]:
+            __settings__.setSetting( "num_votes_low" , num_votes[0])
+        if num_votes[1]:
+            __settings__.setSetting( "num_votes_high" , num_votes[1])
+    if 'genres' in params:
+        genres = params['genres'].split(',')
+        if genres[1]:
+            __settings__.setSetting( "genres" , get_genre(genres[1],True))
+    if 'groups' in params:
+        __settings__.setSetting( "groups" , get_groups(params['groups'],True))
+    if 'companies' in params:
+        __settings__.setSetting( "companies" , get_companies(params['companies'],True))
+    if 'boxoffice_gross_us' in params:
+        boxoffice_gross_us = params['boxoffice_gross_us'].split(',')
+        if boxoffice_gross_us[0]:
+            __settings__.setSetting( "boxoffice_gross_us_low" , boxoffice_gross_us[0])
+        if boxoffice_gross_us[1]:
+            __settings__.setSetting( "boxoffice_gross_us_high" , boxoffice_gross_us[1])
+    if 'sort' in params:
+        __settings__.setSetting( "sort" , get_sort(params['sort'],True))
+    if 'certificates' in params:
+        __settings__.setSetting( "certificates" , get_certificates(params['certificates'],True))
+    if 'countries' in params:
+        __settings__.setSetting( "countries" , get_countries(params['countries'],True))
+    if 'languages' in params:
+        __settings__.setSetting( "languages" , get_languages(params['languages'],True))
+    if 'moviemeter' in params:
+        moviemeter = params['moviemeter'].split(',')
+        if moviemeter[0]:
+            __settings__.setSetting( "moviemeter_low" , moviemeter[0])
+        if moviemeter[1]:
+            __settings__.setSetting( "moviemeter_high" , moviemeter[1])
+    if 'production_status' in params:
+        __settings__.setSetting( "production_status" , get_production_status(params['production_status'],True))
+    if 'runtime' in params:
+        runtime = params['runtime'].split(',')
+        if runtime[0]:
+            __settings__.setSetting( "runtime_low" , runtime[0])
+        if runtime[1]:
+            __settings__.setSetting( "runtime_high" , runtime[1])
+    if 'colors' in params:
+        __settings__.setSetting( "colors" , get_colors(params['colors'],True))
+    if 'role' in params:
+        __settings__.setSetting( "crew" , get_colors(params['role'],True))
+    if 'plot' in params:
+        __settings__.setSetting( "plot" , params['plot'])
+    if 'keywords' in params:
+        __settings__.setSetting( "keywords" , params['keywords'])
+    if 'locations' in params:
+        __settings__.setSetting( "locations" , params['locations'])
+
+    
 def get_url(category,start):
     imdb_query = [
     ("count", __settings__.getSetting( "count" )),
@@ -793,17 +928,22 @@ def get_url(category,start):
     ("user_rating", "%.1f,%.1f" % (float(__settings__.getSetting( "user_rating_low" )),float(__settings__.getSetting( "user_rating_high" )))),
     ("num_votes", "%s,%s" % (__settings__.getSetting( "num_votes_low" ),__settings__.getSetting( "num_votes_high" ))),
     ("genres", "%s,%s" % (get_genre(category),get_genre(__settings__.getSetting( "genres" )))),   
-    ("groups", "%s" % (get_group(__settings__.getSetting( "groups" )))),  
+    ("groups", "%s" % (get_groups(__settings__.getSetting( "groups" )))),  
     ("companies", get_company(__settings__.getSetting( "companies" ))),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
-    ("certificates", get_certificate(__settings__.getSetting( "certificates" ))),
+    ("certificates", get_certificates(__settings__.getSetting( "certificates" ))),
     ("countries", get_countries(__settings__.getSetting( "countries" ))),
     ("languages", get_languages(__settings__.getSetting( "languages" ))),
     ("moviemeter", "%s,%s" % (__settings__.getSetting( "moviemeter_low" ),__settings__.getSetting( "moviemeter_high" ))),
     ("production_status", get_production_status(__settings__.getSetting( "production_status" ))),
     ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
+    ("colors", get_color(__settings__.getSetting( "colors" ))),
+    ("role", __settings__.getSetting( "crew" )),
+    ("plot", __settings__.getSetting( "plot" )),
+    ("keywords", __settings__.getSetting( "keywords" )),
+    ("locations", __settings__.getSetting( "locations" )),
     ("start", start),
     ]
     server = get_server(__settings__.getSetting( "server" ))
@@ -907,7 +1047,7 @@ def get_videos(url):
                 meta_url = "plugin://plugin.video.imdbsearch/?action=episode&imdb_id=%s&episode_id=%s&title=%s" % (imdbID,episode_id,vlabel)
                 id = episode_id
             else:
-                meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/default' % imdbID
+                meta_url = 'plugin://plugin.video.meta/movies/play/imdb/%s/select' % imdbID
 
             videos.append({'name':title,'episode':episode,'thumb':img_url,'genre':genres,
             'video':meta_url,'episode_id':episode_id,'imdb_id':imdbID,
@@ -948,7 +1088,7 @@ def find_episode(imdb_id,episode_id,title):
         season = season_match.group(1)
         episode = season_match.group(2)
         
-    meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'default')
+    meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'select')
     list_item = xbmcgui.ListItem(label=title)
     list_item.setPath(meta_url)
     list_item.setProperty("IsPlayable", "true")
@@ -957,6 +1097,7 @@ def find_episode(imdb_id,episode_id,title):
     
     
 def list_searches():
+    params_url = urllib.quote_plus(get_params_url())
     searches = get_searches()
     (url,params,server) = get_url('None','')
     imdb_url=urllib.quote_plus(url)
@@ -970,21 +1111,59 @@ def list_searches():
     for (name,imdb_url,params) in searches:
         list_item = xbmcgui.ListItem(label=name)
         genre_icon = get_genre_icon('Any')
-        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
+        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         plot = ""
         params['server'] = server
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
-        url = '{0}?action=categories&name={1}&imdb={2}'.format(_url, urllib.quote_plus(prefix), imdb_url)
+        url = '{0}?action=categories&name={1}&imdb={2}&params={3}'.format(_url, urllib.quote_plus(prefix), imdb_url,params_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-
+    
+def get_params_url():
+    params = {}
+    param_keys = [
+    "boxoffice_gross_us_high",
+    "boxoffice_gross_us_low",
+    "certificates",
+    "companies",
+    "count",
+    "countries",
+    "genres",
+    "groups",
+    "index_view",
+    "languages",
+    "moviemeter_high",
+    "moviemeter_low",
+    "num_votes_high",
+    "num_votes_low",
+    "prefix",
+    "production_status",
+    "release_date_end",
+    "release_date_start",
+    "runtime_high",
+    "runtime_low",
+    "server",
+    "sort",
+    "title",
+    "title_type",
+    "tv_view",
+    "user_rating_high",
+    "user_rating_low",
+    "video_view",
+    ]
+    for param in param_keys:
+        params[param] = __settings__.getSetting(param)
+    params_url = urllib.urlencode(params)
+    xbmc.log(params_url)
+    return params_url
     
 def list_categories(prefix,category_url):
+    params_url = urllib.quote_plus(get_params_url())
     categories = get_categories()
     listing = []
     for category in categories:
@@ -994,8 +1173,13 @@ def list_categories(prefix,category_url):
         else:
             name = cat
         list_item = xbmcgui.ListItem(label=name)
+        context_items = []
+        context_items.append(('Reload Settings From Favourite', 
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s)" % 
+        (urllib.quote_plus(prefix), urllib.quote_plus(category_url))))
+        list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
-        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon})
+        list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         if re.search(r'genres=,.*?&',category_url):
             imdb_url = re.sub(r'genres=,(.*?)&',r'genres=%s,\1&' % get_genre(category),category_url)
         else:
@@ -1003,7 +1187,7 @@ def list_categories(prefix,category_url):
         imdb_url=urllib.quote_plus(imdb_url)
         plot = ""
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
-        url = '{0}?action=listing&category={1}&imdb={2}'.format(_url, category,imdb_url)
+        url = '{0}?action=listing&category={1}&imdb={2}&params={3}'.format(_url, category,imdb_url,params_url)
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -1053,7 +1237,7 @@ def list_videos(imdb_url):
         list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'], 
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
-        list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb']})
+        list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb'], 'fanart': get_background()})
         list_item.setProperty('IsPlayable', IsPlayable)
         is_folder = is_folder
         context_items = []
@@ -1064,7 +1248,7 @@ def list_videos(imdb_url):
             if __settings__.getSetting('trakt') == 'true':
                 context_items.append(('Add to Trakt Watchlist', 
                 "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
-                (trakt_type, video['code'], urllib.quote_plus(vlabel))))
+                (trakt_type, video['code'], urllib.quote_plus(vlabel.encode("utf8")))))
         if type == 'movies' or type == 'tv':
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
             context_items.append(('Add To Meta Library', "XBMC.RunPlugin(%s)" % run_str ))
@@ -1081,7 +1265,12 @@ def list_videos(imdb_url):
                 ('Add to Sickrage', "XBMC.RunPlugin(plugin://plugin.video.sickrage?action=addshow&&show_name=%s)" % (video['name'])))
         except:
             pass
-        list_item.addContextMenuItems(context_items,replaceItems=True)
+        if __settings__.getSetting('default_context_menu') == 'true':
+            list_item.addContextMenuItems(context_items,replaceItems=False)
+        else:
+            context_items.append(('Add to Favourites', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite&name=%s&thumb=%s&cmd=%s)" % 
+            (video['name'],video['thumb'],video['video'])))
+            list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
         video_streaminfo['width'] = 1280
@@ -1100,7 +1289,7 @@ def list_videos(imdb_url):
         url = '{0}?action=listing&imdb={1}'.format(_url, urllib.quote_plus(next_url))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
         list_item.setProperty('IsPlayable', 'true')
-        list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png'})
+        list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png', 'fanart': get_background()})
         is_folder = True
         listing.append((url, list_item, is_folder))
         xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -1164,10 +1353,89 @@ def add_to_trakt_watchlist(type,imdb_id,title):
         dialog = xbmcgui.Dialog()
         dialog.notification("Trakt: add to watchlist",title)
     
-    
+def find_crew(name=''):
+    dialog = xbmcgui.Dialog()
+    if not name:
+        name = dialog.input('Search for crew (actor, director etc)', type=xbmcgui.INPUT_ALPHANUM)
+    dialog.notification('IMDB:','Finding crew details...')
+    if not name:
+        dialog.notification('IMDB:','No name!')
+        return
+    url = "http://www.imdb.com/xml/find?json=1&nr=1&q=%s&nm=on" % urllib.quote_plus(name)
+    r = requests.get(url)
+    json = r.json()
+    crew = []
+    if 'name_exact' in json:
+        pop = json['name_exact']
+        for p in pop:
+            crew.append((p['name'],p['id']))
+    if 'name_popular' in json:
+        pop = json['name_popular']
+        for p in pop:
+            crew.append((p['name'],p['id']))
+    if 'name_approx' in json:
+        approx = json['name_approx']
+        for p in approx:
+            crew.append((p['name'],p['id']))
+    if 'name_substring' in json:
+        pop = json['name_substring']
+        for p in pop:
+            crew.append((p['name'],p['id']))
+    names = [item[0] for item in crew]
+    if names:
+        index = dialog.select('Pick crew member',names)
+        id = crew[index][1]
+        __settings__.setSetting('crew',id)
+    else:
+        dialog.notification('IMDB:','Nothing Found!')
+
+def find_keywords(keyword=''):
+    dialog = xbmcgui.Dialog()
+    if not keyword:
+        keyword = dialog.input('Search for keyword', type=xbmcgui.INPUT_ALPHANUM)
+    dialog.notification('IMDB:','Finding keyword matches...')
+    if not keyword:
+        dialog.notification('IMDB:','No keyword!')
+        return
+    url = "http://www.imdb.com/xml/find?json=1&nr=1&q=%s&kw=on" % urllib.quote_plus(keyword)
+    r = requests.get(url)
+    json = r.json()
+    keywords = []
+    if 'keyword_exact' in json:
+        pop = json['keyword_exact']
+        for p in pop:
+            keywords.append((p['description'],p['keyword']))    
+    if 'keyword_popular' in json:
+        pop = json['keyword_popular']
+        for p in pop:
+            keywords.append((p['description'],p['keyword']))
+    if 'keyword_approx' in json:
+        approx = json['keyword_approx']
+        for p in approx:
+            keywords.append((p['description'],p['keyword']))
+    if 'keyword_substring' in json:
+        approx = json['keyword_substring']
+        for p in approx:
+            keywords.append((p['description'],p['keyword']))
+    names = [item[0] for item in keywords]
+    if keywords:
+        index = dialog.select('Pick keywords member',names)
+        id = keywords[index][1]
+        __settings__.setSetting('keywords',id)
+    else:
+        dialog.notification('IMDB:','Nothing Found!')
+
+        
+def favourite(name,thumb,cmd):
+    result = loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Favourites.AddFavourite", "params": {"title":"%s", "type":"media", "path":"%s", "thumbnail":"%s"}, "id": 1}' % (name, cmd, thumb)))
+
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     if params:
+        if params['action'] == 'find_keywords':
+            find_keywords()
+        if params['action'] == 'find_crew':
+            find_crew()
         if params['action'] == 'meta_settings':
             xbmcaddon.Addon(id='plugin.video.meta').openSettings()        
         elif params['action'] == 'library':
@@ -1187,6 +1455,23 @@ def router(paramstring):
             if 'imdb' in params.keys():
                 imdb = params['imdb']
                 list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb))
+        elif params['action'] == 'favourite_settings':
+            prefix = ''
+            if 'prefix' in params.keys():
+                prefix = params['prefix']
+            if 'imdb' in params.keys():
+                imdb = params['imdb']
+                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb))
+        elif params['action'] == 'favourite':
+            name = ''
+            if 'name' in params.keys():
+                name = params['name']
+            thumb = ''
+            if 'thumb' in params.keys():
+                thumb = params['thumb']
+            if 'cmd' in params.keys():
+                cmd = params['cmd']
+                favourite(urllib.unquote_plus(name),urllib.unquote_plus(thumb),urllib.unquote_plus(cmd))
         elif params['action'] == 'listing':
             if 'imdb' in params.keys():
                 imdb = params['imdb']
