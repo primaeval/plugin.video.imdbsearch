@@ -140,9 +140,9 @@ def get_company(companies_select, reverse=False):
     "Disney":"disney",
     "Warner":"warner"}
     if reverse:
-        return find_key(server_dict,server_select)
+        return find_key(companies_dict,companies_select)
     else:
-        return server_dict[server_select]
+        return companies_dict[companies_select]
 
 def get_production_status(production_status_select, reverse=False):
     production_status_dict = {"Any":"*",
@@ -932,7 +932,7 @@ def get_url(category,start):
     ("companies", get_company(__settings__.getSetting( "companies" ))),
     ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
     ("sort", get_sort(__settings__.getSetting( "sort" ))),
-    ("certificates", get_certificate(__settings__.getSetting( "certificates" ))),
+    ("certificates", get_certificates(__settings__.getSetting( "certificates" ))),
     ("countries", get_countries(__settings__.getSetting( "countries" ))),
     ("languages", get_languages(__settings__.getSetting( "languages" ))),
     ("moviemeter", "%s,%s" % (__settings__.getSetting( "moviemeter_low" ),__settings__.getSetting( "moviemeter_high" ))),
