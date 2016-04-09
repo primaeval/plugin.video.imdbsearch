@@ -889,7 +889,7 @@ def get_url1(category,start):
 def get_url(settings):
     if not "start" in settings:
         settings["start"] = "1"
-    xbmc.log(re.sub(',',',\n',repr(settings)))
+
     imdb_query = {}
     
     if "count" in settings:
@@ -999,9 +999,10 @@ def get_url(settings):
         value = imdb_query[key]
         if not "Any" in value and value != "None" and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
             params[key] = value
+
     params_url = urllib.urlencode(params)
     url = "%s%s" % (url,params_url)
-    xbmc.log(url)
+
     return (url, settings)
 
 def get_videos(settings):
@@ -1240,7 +1241,7 @@ def list_categories(settings_url):
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
-        url = '{0}?action=listing&settings={1}'.format(_url, urllib.quote_plus(settings_url))
+        url = '{0}?action=listing&settings={1}'.format(_url, urllib.quote_plus(urllib.urlencode(params)))
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
