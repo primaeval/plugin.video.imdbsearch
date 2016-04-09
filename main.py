@@ -847,46 +847,14 @@ def get_categories():
 def favourite_settings(settings_url):
     settings = dict(parse_qsl(settings_url))
     for s in settings:
-        __settings__.setSetting(s,settings[s])
+        value = settings[s]
+        if value == "NULL":
+            value = ''
+        __settings__.setSetting(s,value)
 
-def get_url1(category,start):
-    imdb_query = [
-    ("count", __settings__.getSetting( "count" )),
-    ("title", __settings__.getSetting( "title" )),
-    ("title_type", get_title_type(__settings__.getSetting( "title_type" ))),
-    ("release_date", "%s,%s" % (__settings__.getSetting( "release_date_start" ),__settings__.getSetting( "release_date_end" ))),
-    ("user_rating", "%.1f,%.1f" % (float(__settings__.getSetting( "user_rating_low" )),float(__settings__.getSetting( "user_rating_high" )))),
-    ("num_votes", "%s,%s" % (__settings__.getSetting( "num_votes_low" ),__settings__.getSetting( "num_votes_high" ))),
-    ("genres", "%s,%s" % (get_genre(category),get_genre(__settings__.getSetting( "genres" )))),   
-    ("groups", "%s" % (get_groups(__settings__.getSetting( "groups" )))),  
-    ("companies", get_company(__settings__.getSetting( "companies" ))),
-    ("boxoffice_gross_us", "%s,%s" % (__settings__.getSetting( "boxoffice_gross_us_low" ),__settings__.getSetting( "boxoffice_gross_us_high" ))),
-    ("sort", get_sort(__settings__.getSetting( "sort" ))),
-    ("certificates", get_certificates(__settings__.getSetting( "certificates" ))),
-    ("countries", get_countries(__settings__.getSetting( "countries" ))),
-    ("languages", get_languages(__settings__.getSetting( "languages" ))),
-    ("moviemeter", "%s,%s" % (__settings__.getSetting( "moviemeter_low" ),__settings__.getSetting( "moviemeter_high" ))),
-    ("production_status", get_production_status(__settings__.getSetting( "production_status" ))),
-    ("runtime", "%s,%s" % (__settings__.getSetting( "runtime_low" ),__settings__.getSetting( "runtime_high" ))),
-    ("sort", get_sort(__settings__.getSetting( "sort" ))),
-    ("colors", get_color(__settings__.getSetting( "colors" ))),
-    ("role", __settings__.getSetting( "crew" )),
-    ("plot", __settings__.getSetting( "plot" )),
-    ("keywords", __settings__.getSetting( "keywords" )),
-    ("locations", __settings__.getSetting( "locations" )),
-    ("start", start),
-    ]
-    server = get_server(__settings__.getSetting( "server" ))
-    url = "http://%s.imdb.com/search/title?" % server
-    params = {}
-    for (field, value) in imdb_query:
-        if not "Any" in value and value != "None" and value != "" and value != "," and value != "*" and value != "*," and value != ",*": #NOTE title has * sometimes
-            params[field] = value
-    params_url = urllib.urlencode(params)
-    url = "%s%s" % (url,params_url)
-    return (url,params,server)
     
 def get_url(settings):
+    settings = {k:settings[k] for k in settings if settings[k] not in ('None','Any','NULL')}
     if not "start" in settings:
         settings["start"] = "1"
 
@@ -1149,10 +1117,12 @@ def find_episode(imdb_id,episode_id,title):
 
 def list_searches():
     (settings, settings_url) = get_settings_url()
+
     settings_url=urllib.quote_plus(settings_url)
     searches = get_searches()
     prefix = settings['prefix']
-    if not prefix:
+
+    if prefix == "NULL":
         name = 'Search'
     else:
         name = '%s Search' % prefix
@@ -1165,7 +1135,10 @@ def list_searches():
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         plot = ""
         for setting in sorted(settings):
-            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (setting, settings[setting])
+            value = settings[setting]
+            if value == "NULL":
+                value = ''
+            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (setting, value)
         list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
         url = '{0}?action=categories&settings={1}'.format(_url, settings_url)
         is_folder = True
@@ -1215,18 +1188,24 @@ def get_settings_url():
     ]
     for setting in setting_keys:
         settings[setting] = __settings__.getSetting(setting)
+        if not settings[setting]:
+            settings[setting] = 'NULL'
     settings_url = urllib.urlencode(settings)
     return (settings, settings_url)
     
+def log(var):
+    xbmc.log(re.sub(',',',\n',repr(var)))
+    
 def list_categories(settings_url):
     params = dict(parse_qsl(settings_url))
+
     categories = get_categories()
     listing = []
     genre = params["genres"]
     for category in categories:
         params['category'] = category
-        if 'prefix' in params:
-            name = "%s %s" % (prefix, category)
+        if params['prefix'] != "NULL":
+            name = "%s %s" % (params['prefix'], category)
         else:
             name = category
         list_item = xbmcgui.ListItem(label=name)
@@ -1239,7 +1218,10 @@ def list_categories(settings_url):
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         plot = ""
         for param in sorted(params):
-            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
+            value = params[param]
+            if value == "NULL":
+                value = ''
+            plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, value)
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
         url = '{0}?action=listing&settings={1}'.format(_url, urllib.quote_plus(urllib.urlencode(params)))
         is_folder = True
@@ -1251,6 +1233,7 @@ def list_categories(settings_url):
 
 def list_videos(settings_url): 
     params = dict(parse_qsl(settings_url))
+
     (videos, params) = get_videos(params) 
     title_type = get_title_type(params["title_type"])
     type = ''
@@ -1371,18 +1354,18 @@ def play_video(path):
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 def on_token_refreshed(response):
-        __settings__.setSetting( "authorization", dumps(response))
+    __settings__.setSetting( "authorization", dumps(response))
 
 def authenticate():
-        dialog = xbmcgui.Dialog()
-        pin = dialog.input('Open a web browser at %s' % Trakt['oauth'].pin_url(), type=xbmcgui.INPUT_ALPHANUM)
-        if not pin:
-            return False
-        authorization = Trakt['oauth'].token_exchange(pin, 'urn:ietf:wg:oauth:2.0:oob')
-        if not authorization:
-            return False
-        __settings__.setSetting( "authorization", dumps(authorization))
-        return True
+    dialog = xbmcgui.Dialog()
+    pin = dialog.input('Open a web browser at %s' % Trakt['oauth'].pin_url(), type=xbmcgui.INPUT_ALPHANUM)
+    if not pin:
+        return False
+    authorization = Trakt['oauth'].token_exchange(pin, 'urn:ietf:wg:oauth:2.0:oob')
+    if not authorization:
+        return False
+    __settings__.setSetting( "authorization", dumps(authorization))
+    return True
 
 def add_to_trakt_watchlist(type,imdb_id,title):
     Trakt.configuration.defaults.app(
