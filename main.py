@@ -1051,7 +1051,7 @@ def list_searches():
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
-        url = '{0}?action=categories&name={1}&imdb={2}&settings={3}'.format(_url, prefix, imdb_url,settings_url)
+        url = '{0}?action=categories&name={1}&imdb64={2}&settings64={3}'.format(_url, prefix, imdb_url,settings_url)
         is_folder = True
         context_items = []
         context_items.append(('Information', 'XBMC.Action(Info)'))
@@ -1072,7 +1072,6 @@ def get_settings_url():
     "countries",
     "genres",
     "groups",
-    "index_view",
     "languages",
     "moviemeter_high",
     "moviemeter_low",
@@ -1113,7 +1112,7 @@ def list_categories(prefix,category_url,settings_url):
         context_items = []
         context_items.append(('Information', 'XBMC.Action(Info)'))
         context_items.append(('Reload Settings From Favourite', 
-        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s&settings=%s)" % 
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb64=%s&settings64=%s)" % 
         (urllib.quote_plus(prefix), base64.urlsafe_b64encode(category_url).strip('='),base64.urlsafe_b64encode(settings_url).strip('='))))
         list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
@@ -1128,7 +1127,7 @@ def list_categories(prefix,category_url,settings_url):
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
-        url = '{0}?action=listing&category={1}&imdb={2}&settings={3}'.format(_url, urllib.quote_plus(category),
+        url = '{0}?action=listing&category={1}&imdb64={2}&settings64={3}'.format(_url, urllib.quote_plus(category),
         imdb_url,base64.urlsafe_b64encode(settings_url).strip('='))
         is_folder = True
         listing.append((url, list_item, is_folder))
@@ -1187,7 +1186,7 @@ def list_videos(prefix,imdb_url,settings_url):
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
         context_items.append(('Reload Settings From Favourite', 
-        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s&settings=%s)" % 
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb64=%s&settings64=%s)" % 
         (urllib.quote_plus(prefix), base64.urlsafe_b64encode(imdb_url).strip('='),base64.urlsafe_b64encode(settings_url).strip('='))))            
         if type == 'movies' or type == 'tv' or type == 'episode':
             if __settings__.getSetting('trakt') == 'true':
@@ -1231,7 +1230,7 @@ def list_videos(prefix,imdb_url,settings_url):
 
     listing = []
     if next_url:
-        url = '{0}?action=listing&imdb={1}&settings={2}'.format(_url, 
+        url = '{0}?action=listing&imdb64={1}&settings64={2}'.format(_url, 
         base64.urlsafe_b64encode(next_url).strip('='),base64.urlsafe_b64encode(settings_url).strip('='))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
         list_item.setProperty('IsPlayable', 'true')
@@ -1392,15 +1391,17 @@ def router(paramstring):
         name = params['name']
         name = urllib.unquote_plus(name)
     settings = ''
-    if 'settings' in params.keys():
-        settings64 = params['settings']
+    if 'settings64' in params.keys():
+        settings64 = params['settings64']
         settings64repad = repad(settings64)
         settings = base64.urlsafe_b64decode(settings64repad)
     imdb_url = ''
-    if 'imdb' in params.keys():
-        imdb_url64 = params['imdb']
+    if 'imdb64' in params.keys():
+        imdb_url64 = params['imdb64']
         imdb_url64repad = repad(imdb_url64)
         imdb_url = base64.urlsafe_b64decode(imdb_url64repad)
+    elif 'imdb' in params.keys(): #NOTE depreciated
+        imdb_url = urllib.unquote_plus(params['imdb'])
     prefix = ''
     if 'prefix' in params.keys():
         prefixq = params['prefix']

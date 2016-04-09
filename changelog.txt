@@ -1,3 +1,7 @@
+Version 0.0.20
+- WARNING: Favourites have changed again! Sorry!
+    (I had to encode the urls as base64 to get reload to work properly)
+
 Version 0.0.19
 - NEW reload settings from favourite behaviour!
     (all settings are encoded in the favourite url now)
