@@ -14,8 +14,6 @@ import re
 import urllib,urlparse
 import HTMLParser
 from trakt import Trakt
-import base64
-#xbmc.log(re.sub(',',',\n',repr(sys.argv)))
 
 if sys.version_info >= (2, 7):
     from json import loads, dumps
@@ -1007,10 +1005,9 @@ def get_url(settings):
     return (url, settings)
 
 def get_videos(settings):
-    #xbmc.log(re.sub(',',',\n',repr(settings)))
     (url, params) = get_url(settings)
     params["more"] = "false"
-    #xbmc.log(re.sub(',',',\n',repr(params)))
+
     r = requests.get(url)
     html = r.text
     html = HTMLParser.HTMLParser().unescape(html)
@@ -1108,13 +1105,10 @@ def get_videos(settings):
             'code': id,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'sort':sort,'cast':cast,'runtime':runtime,'votes':votes, 'certificate':certificate})
             
-    #next_url = ''
     pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
     if pagination_match:
         params["start"] = str(int(params["start"]) + int(params["count"]))
         params["more"] = "true"
-        #server = get_server(__settings__.getSetting( "server" ))
-        #next_url = "http://%s.imdb.com%s" % (server,pagination_match.group(1))
         
     return (videos,params)
     
@@ -1154,23 +1148,16 @@ def find_episode(imdb_id,episode_id,title):
 
 def list_searches():
     (settings, settings_url) = get_settings_url()
-    #params = dict(parse_qsl(settings_url))
-    #settings_url=base64.urlsafe_b64encode(settings_url).strip('=')
     settings_url=urllib.quote_plus(settings_url)
     searches = get_searches()
-    #(url,paramsx,server) = get_url('None','')
-    #imdb_url=base64.urlsafe_b64encode(url).strip('=')
-    #prefix = __settings__.getSetting( "prefix" )
     prefix = settings['prefix']
     if not prefix:
         name = 'Search'
     else:
         name = '%s Search' % prefix
     prefix = urllib.quote_plus(prefix)
-    #searches.append((name,imdb_url,params))
     searches.append((name,settings))
     listing = []
-    #for (name,imdb_url,params) in searches:
     for (name,settings) in searches:
         list_item = xbmcgui.ListItem(label=name)
         genre_icon = get_genre_icon('Any')
@@ -1230,7 +1217,6 @@ def get_settings_url():
     settings_url = urllib.urlencode(settings)
     return (settings, settings_url)
     
-#def list_categories(prefix,category_url,settings_url):
 def list_categories(settings_url):
     params = dict(parse_qsl(settings_url))
     categories = get_categories()
@@ -1238,7 +1224,6 @@ def list_categories(settings_url):
     genre = params["genres"]
     for category in categories:
         params['category'] = category
-        #cat = re.sub('_',' ',category)
         if 'prefix' in params:
             name = "%s %s" % (prefix, category)
         else:
@@ -1251,13 +1236,7 @@ def list_categories(settings_url):
         list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
-        #if re.search(r'genres=,.*?&',category_url):
-        #    imdb_url = re.sub(r'genres=,(.*?)&',r'genres=%s,\1&' % get_genre(category),category_url)
-        #else:
-        #    imdb_url = "%s&genres=%s," % (category_url,get_genre(category))
-        #imdb_url=base64.urlsafe_b64encode(imdb_url).strip('=')
         plot = ""
-        #params["genres"] = "%s,%s" % (get_genre(category),genre)
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
@@ -1270,9 +1249,7 @@ def list_categories(settings_url):
 
 
 def list_videos(settings_url): 
-    #xbmc.log(re.sub(',',',\n',repr(settings_url)))
     params = dict(parse_qsl(settings_url))
-    #xbmc.log(re.sub(',',',\n',repr(params)))
     (videos, params) = get_videos(params) 
     title_type = get_title_type(params["title_type"])
     type = ''
@@ -1365,7 +1342,6 @@ def list_videos(settings_url):
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
 
     listing = []
-    #if next_url:
     if params["more"] == "true":
         url = '{0}?action=listing&settings={1}'.format(_url, urllib.quote_plus(urllib.urlencode(params)))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
@@ -1375,7 +1351,6 @@ def list_videos(settings_url):
         listing.append((url, list_item, is_folder))
         xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
 
-        
     xbmcplugin.setContent(int(sys.argv[1]), content)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_UNSORTED)
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
@@ -1516,7 +1491,6 @@ def repad(data):
     
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
-    #xbmc.log(re.sub(',',',\n',repr(params)))
     type = ''
     if 'type' in params.keys():
         type = params['type']
@@ -1530,38 +1504,19 @@ def router(paramstring):
     settings_url = ''
     if 'settings' in params.keys():
         settings_url = urllib.unquote_plus(params['settings'])
-    #if 'settings64' in params.keys():
-    #    settings64 = params['settings64']
-    #    settings64repad = repad(settings64)
-    #    settings = base64.urlsafe_b64decode(settings64repad)
-    imdb_url = ''
-    if 'imdb64' in params.keys():
-        imdb_url64 = params['imdb64']
-        imdb_url64repad = repad(imdb_url64)
-        imdb_url = base64.urlsafe_b64decode(imdb_url64repad)
-    elif 'imdb' in params.keys(): #NOTE depreciated
-        imdb_url = urllib.unquote_plus(params['imdb'])
-    prefix = ''
-    if 'prefix' in params.keys():
-        prefixq = params['prefix']
-        prefix = urllib.unquote_plus(prefixq)
     thumb = ''
     if 'thumb' in params.keys():
-        thumb64 = params['thumb']
-        thumb64repad = repad(thumb64)
-        thumb = base64.urlsafe_b64decode(thumb64repad)
+        thumb = urllib.unquote_plus(params['thumb'])
     cmd = ''
     if 'cmd' in params.keys():
-        cmd64 = params['cmd']
-        cmd64repad = repad(cmd64)
-        cmd = base64.urlsafe_b64decode(cmd64repad)
+        cmd = urllib.unquote_plus(params['cmd'])
     episode_id = ''
     if 'episode_id' in params.keys():
         episode_id = params['episode_id']
     if 'title' in params.keys():
         titleq = params['title']
         title = urllib.unquote_plus(titleq)   
-    if params:
+    if 'action' in params:
         if params['action'] == 'find_keywords':
             find_keywords()
         elif params['action'] == 'find_crew':
