@@ -14,6 +14,7 @@ import re
 import urllib,urlparse
 import HTMLParser
 from trakt import Trakt
+import base64
 
 if sys.version_info >= (2, 7):
     from json import loads, dumps
@@ -845,7 +846,7 @@ def get_categories():
 
     
 def favourite_settings(prefix,imdb_url,settings_url):
-    settings = dict(parse_qsl(urllib.unquote_plus(settings_url)))
+    settings = dict(parse_qsl(settings_url))
     for s in settings:
         __settings__.setSetting(s,settings[s])
 
@@ -1028,16 +1029,18 @@ def find_episode(imdb_id,episode_id,title):
     
 
 def list_searches():
-    settings_url = urllib.quote_plus(get_settings_url())
-    params = dict(parse_qsl(urllib.unquote_plus(settings_url)))
+    settings_url = get_settings_url()
+    params = dict(parse_qsl(settings_url))
+    settings_url=base64.urlsafe_b64encode(settings_url).strip('=')
     searches = get_searches()
     (url,paramsx,server) = get_url('None','')
-    imdb_url=urllib.quote_plus(url)
+    imdb_url=base64.urlsafe_b64encode(url).strip('=')
     prefix = __settings__.getSetting( "prefix" )
     if not prefix:
         name = 'Search'
     else:
         name = '%s Search' % prefix
+    prefix = urllib.quote_plus(prefix)
     searches.append((name,imdb_url,params))
     listing = []
     for (name,imdb_url,params) in searches:
@@ -1045,11 +1048,10 @@ def list_searches():
         genre_icon = get_genre_icon('Any')
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
         plot = ""
-        #params['server'] = server
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': '', 'plot': plot})
-        url = '{0}?action=categories&name={1}&imdb={2}&settings={3}'.format(_url, urllib.quote_plus(prefix), imdb_url,settings_url)
+        url = '{0}?action=categories&name={1}&imdb={2}&settings={3}'.format(_url, prefix, imdb_url,settings_url)
         is_folder = True
         context_items = []
         context_items.append(('Information', 'XBMC.Action(Info)'))
@@ -1097,7 +1099,7 @@ def get_settings_url():
     return settings_url
     
 def list_categories(prefix,category_url,settings_url):
-    params = dict(parse_qsl(urllib.unquote_plus(settings_url)))
+    params = dict(parse_qsl(settings_url))
     categories = get_categories()
     listing = []
     genre = params["genres"]
@@ -1112,7 +1114,7 @@ def list_categories(prefix,category_url,settings_url):
         context_items.append(('Information', 'XBMC.Action(Info)'))
         context_items.append(('Reload Settings From Favourite', 
         "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s&settings=%s)" % 
-        (urllib.quote_plus(prefix), urllib.quote_plus(category_url),urllib.quote_plus(settings_url))))
+        (urllib.quote_plus(prefix), base64.urlsafe_b64encode(category_url).strip('='),base64.urlsafe_b64encode(settings_url).strip('='))))
         list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
         list_item.setArt({'thumb': genre_icon, 'icon': genre_icon, 'fanart': get_background()})
@@ -1120,14 +1122,14 @@ def list_categories(prefix,category_url,settings_url):
             imdb_url = re.sub(r'genres=,(.*?)&',r'genres=%s,\1&' % get_genre(category),category_url)
         else:
             imdb_url = "%s&genres=%s," % (category_url,get_genre(category))
-        imdb_url=urllib.quote_plus(imdb_url)
-        settings_url = urllib.quote_plus(settings_url)
+        imdb_url=base64.urlsafe_b64encode(imdb_url).strip('=')
         plot = ""
         params["genres"] = "%s,%s" % (get_genre(category),genre)
         for param in sorted(params):
             plot = plot + "%s[COLOR=darkgray]=[/COLOR][B]%s[/B] " % (param, params[param])
         list_item.setInfo('video', {'title': name, 'genre': category, 'plot': plot})
-        url = '{0}?action=listing&category={1}&imdb={2}&settings={3}'.format(_url, category,imdb_url,settings_url)
+        url = '{0}?action=listing&category={1}&imdb={2}&settings={3}'.format(_url, urllib.quote_plus(category),
+        imdb_url,base64.urlsafe_b64encode(settings_url).strip('='))
         is_folder = True
         listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -1135,8 +1137,8 @@ def list_categories(prefix,category_url,settings_url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def list_videos(imdb_url):
-    (videos,next_url) = get_videos(imdb_url)
+def list_videos(prefix,imdb_url,settings_url): 
+    (videos,next_url) = get_videos(imdb_url) 
     title_type = get_title_type(__settings__.getSetting( "title_type" ))
     type = ''
     content = ''
@@ -1184,6 +1186,9 @@ def list_videos(imdb_url):
         context_items.append(('Information', 'XBMC.Action(Info)'))
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
+        context_items.append(('Reload Settings From Favourite', 
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&prefix=%s&imdb=%s&settings=%s)" % 
+        (urllib.quote_plus(prefix), base64.urlsafe_b64encode(imdb_url).strip('='),base64.urlsafe_b64encode(settings_url).strip('='))))            
         if type == 'movies' or type == 'tv' or type == 'episode':
             if __settings__.getSetting('trakt') == 'true':
                 context_items.append(('Add to Trakt Watchlist', 
@@ -1209,7 +1214,7 @@ def list_videos(imdb_url):
             list_item.addContextMenuItems(context_items,replaceItems=False)
         else:
             context_items.append(('Add to Favourites', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite&name=%s&thumb=%s&cmd=%s)" % 
-            (video['name'],video['thumb'],video['video'])))
+            (urllib.quote_plus(video['name']),base64.urlsafe_b64encode(video['thumb']).strip('='),base64.urlsafe_b64encode(video['video']).strip('='))))
             list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
         video_streaminfo['aspect'] = round(1280.0 / 720.0, 2)
@@ -1226,7 +1231,8 @@ def list_videos(imdb_url):
 
     listing = []
     if next_url:
-        url = '{0}?action=listing&imdb={1}'.format(_url, urllib.quote_plus(next_url))
+        url = '{0}?action=listing&imdb={1}&settings={2}'.format(_url, 
+        base64.urlsafe_b64encode(next_url).strip('='),base64.urlsafe_b64encode(settings_url).strip('='))
         list_item = xbmcgui.ListItem(label='[B]Next Page >>[/B]')
         list_item.setProperty('IsPlayable', 'true')
         list_item.setArt({'thumb': 'DefaultNetwork.png', 'icon': 'DefaultNetwork.png', 'fanart': get_background()})
@@ -1369,8 +1375,52 @@ def find_keywords(keyword=''):
 def favourite(name,thumb,cmd):
     result = loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Favourites.AddFavourite", "params": {"title":"%s", "type":"media", "path":"%s", "thumbnail":"%s"}, "id": 1}' % (name, cmd, thumb)))
 
+def repad(data):
+     return data + "=" * (-len(data)%4)
+    
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
+    
+    type = ''
+    if 'type' in params.keys():
+        type = params['type']
+    imdb_id = ''
+    if 'imdb_id' in params.keys():
+        imdb_id = params['imdb_id']
+    name = ''
+    if 'name' in params.keys():
+        name = params['name']
+        name = urllib.unquote_plus(name)
+    settings = ''
+    if 'settings' in params.keys():
+        settings64 = params['settings']
+        settings64repad = repad(settings64)
+        settings = base64.urlsafe_b64decode(settings64repad)
+    imdb_url = ''
+    if 'imdb' in params.keys():
+        imdb_url64 = params['imdb']
+        imdb_url64repad = repad(imdb_url64)
+        imdb_url = base64.urlsafe_b64decode(imdb_url64repad)
+    prefix = ''
+    if 'prefix' in params.keys():
+        prefixq = params['prefix']
+        prefix = urllib.unquote_plus(prefixq)
+    thumb = ''
+    if 'thumb' in params.keys():
+        thumb64 = params['thumb']
+        thumb64repad = repad(thumb64)
+        thumb = base64.urlsafe_b64decode(thumb64repad)
+    cmd = ''
+    if 'cmd' in params.keys():
+        cmd64 = params['cmd']
+        cmd64repad = repad(cmd64)
+        cmd = base64.urlsafe_b64decode(cmd64repad)
+    episode_id = ''
+    if 'episode_id' in params.keys():
+        episode_id = params['episode_id']
+    if 'title' in params.keys():
+        titleq = params['title']
+        title = urllib.unquote_plus(titleq)   
     if params:
         if params['action'] == 'find_keywords':
             find_keywords()
@@ -1379,67 +1429,29 @@ def router(paramstring):
         if params['action'] == 'meta_settings':
             xbmcaddon.Addon(id='plugin.video.meta').openSettings()        
         elif params['action'] == 'library':
-            if 'type' in params.keys():
-                type = params['type']
-            if 'imdb_id' in params.keys():
-                imdb_id = params['imdb_id']
             if type == 'tv':
                 id = get_tvdb_id(imdb_id)
                 xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/%s)" % (type,id))
             else:
                 xbmc.executebuiltin("RunPlugin(plugin://plugin.video.meta/%s/add_to_library/tmdb/%s)" % (type,imdb_id))
         elif params['action'] == 'categories':
-            name = ''
-            if 'name' in params.keys():
-                name = params['name']
-            if 'settings' in params.keys():
-                settings = params['settings']
-            if 'imdb' in params.keys():
-                imdb = params['imdb']
-                list_categories(urllib.unquote_plus(name),urllib.unquote_plus(imdb),urllib.unquote_plus(settings))
+            if imdb_url:
+                list_categories(name,imdb_url,settings)
         elif params['action'] == 'favourite_settings':
-            prefix = ''
-            if 'prefix' in params.keys():
-                prefix = params['prefix']
-            if 'settings' in params.keys():
-                settings = params['settings']
-            if 'imdb' in params.keys():
-                imdb = params['imdb']
-                favourite_settings(urllib.unquote_plus(prefix),urllib.unquote_plus(imdb),urllib.unquote_plus(settings))
+            if settings:
+                favourite_settings(prefix,imdb_url,settings)
         elif params['action'] == 'favourite':
-            name = ''
-            if 'name' in params.keys():
-                name = params['name']
-            thumb = ''
-            if 'thumb' in params.keys():
-                thumb = params['thumb']
-            if 'cmd' in params.keys():
-                cmd = params['cmd']
-                favourite(urllib.unquote_plus(name),urllib.unquote_plus(thumb),urllib.unquote_plus(cmd))
+            if cmd:
+                favourite(name,thumb,cmd)
         elif params['action'] == 'listing':
-            if 'imdb' in params.keys():
-                imdb = params['imdb']
-                list_videos(urllib.unquote_plus(imdb))
+            if imdb_url and settings:
+                list_videos(prefix,imdb_url,settings)
         elif params['action'] == 'addtotraktwatchlist':
-            if 'type' in params.keys():
-                type = params['type']
-            if 'title' in params.keys():
-                title = params['title']
-                title = urllib.unquote_plus(title)
-            if 'imdb_id' in params.keys():
-                imdb_id = params['imdb_id']
+            if imdb_id:
                 add_to_trakt_watchlist(type,imdb_id,title)
         elif params['action'] == 'episode':
-            if 'imdb_id' in params.keys():
-                imdb_id = params['imdb_id']
-            if 'episode_id' in params.keys():
-                episode_id = params['episode_id']
-            if 'title' in params.keys():
-                title = params['title']
-                title = urllib.unquote_plus(title)
-            find_episode(imdb_id,episode_id,title)
-        elif params['action'] == 'play':
-            play_video(params['video'])
+            if imdb_id:
+                find_episode(imdb_id,episode_id,title)
     else:
         if __settings__.getSetting('open_settings') == 'true':
             __settings__.openSettings()
