@@ -854,7 +854,12 @@ def favourite_settings(settings_url):
 
     
 def get_url(settings):
-    settings = {k:settings[k] for k in settings if settings[k] not in ('None','Any','NULL')}
+    new_settings = {}
+    for setting in settings:
+        if settings[setting] not in ('None','Any','NULL'):
+            new_settings[setting] = settings[setting]
+    settings = new_settings
+    
     if not "start" in settings:
         settings["start"] = "1"
 
