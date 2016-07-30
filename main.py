@@ -1,6 +1,6 @@
 import xbmcaddon
 __settings__ = xbmcaddon.Addon(id='plugin.video.imdbsearch')
- 
+
 from urlparse import parse_qsl
 import xbmcgui
 import xbmcplugin
@@ -19,16 +19,19 @@ if sys.version_info >= (2, 7):
     from json import loads, dumps
 else:
     from simplejson import loads, dumps
-    
+
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
+
+def log(x):
+    xbmc.log(repr(x))
 
 def get_background():
     addon_path = xbmcaddon.Addon().getAddonInfo("path")
     return os.path.join(addon_path, 'resources', 'img', "background.png")
 
 def get_icon_path(icon_name):
-    addon_path = xbmcaddon.Addon().getAddonInfo("path")    
+    addon_path = xbmcaddon.Addon().getAddonInfo("path")
     return os.path.join(addon_path, 'resources', 'img', icon_name+".png")
 
 def get_genre_icon(genre):
@@ -108,7 +111,7 @@ def get_colors(colors_select, reverse=False):
         return find_key(colors_dict,colors_select)
     else:
         return colors_dict[colors_select]
-    
+
 def get_certificates(certificates_select, reverse=False):
     certificates_dict = {"Any":"Any",
     "US:G":"us:g",
@@ -225,7 +228,7 @@ def get_genre(genres_select, reverse=False):
         return find_key(genres_dict,genres_select)
     else:
         return genres_dict[genres_select]
-    
+
 def find_key(dict,value):
     for k,v in dict.iteritems():
         if v == value:
@@ -837,13 +840,13 @@ def get_countries(countries_select, reverse=False):
 def get_searches():
     #TODO persistent searches
     return []
-    
+
 def get_categories():
     return ["Any","Action","Adventure","Animation","Biography","Comedy","Crime","Documentary","Drama","Family",
     "Fantasy","Film Noir","Game show","History","Horror","Music","Musical","Mystery","News","Reality TV","Romance",
     "Sci-Fi","Sport","Talk Show","Thriller","War","Western"]
 
-    
+
 def favourite_settings(settings_url):
     settings = dict(parse_qsl(settings_url))
     for s in settings:
@@ -852,42 +855,42 @@ def favourite_settings(settings_url):
             value = ''
         __settings__.setSetting(s,value)
 
-    
+
 def get_url(settings):
     new_settings = {}
     for setting in settings:
         if settings[setting] not in ('None','Any','NULL'):
             new_settings[setting] = settings[setting]
     settings = new_settings
-    
+
     if not "start" in settings:
         settings["start"] = "1"
 
     imdb_query = {}
-    
+
     if "count" in settings:
         imdb_query["count"] = settings["count"]
-        
+
     if "title" in settings:
         imdb_query["title"] = settings["title"]
-        
+
     if "title_type" in settings:
         imdb_query["title_type"] = get_title_type(settings["title_type"])
-        
+
     release_date = ['','']
     if "release_date_start" in settings:
         release_date[0] = settings["release_date_start"]
     if "release_date_end" in settings:
         release_date[1] = settings["release_date_end"]
     imdb_query["release_date"] = '%s,%s' % (release_date[0],release_date[1])
-        
+
     user_rating = [0.0,10.0]
     if "user_rating_low" in settings:
         user_rating[0] = settings["user_rating_low"]
     if "user_rating_high" in settings:
         user_rating[1] = settings["user_rating_high"]
     imdb_query["user_rating"] = "%.1f,%.1f" % (float(user_rating[0]),float(user_rating[1]))
-    
+
     num_votes = ['','']
     if "num_votes_low" in settings:
         num_votes[0] = settings["num_votes_low"]
@@ -901,42 +904,42 @@ def get_url(settings):
     if "genres" in settings:
         genres[1] = get_genre(settings["genres"])
     imdb_query["genres"] = ('%s,%s' % (genres[0],genres[1])).strip(',')
-    
+
     if "groups" in settings:
         imdb_query["groups"] = get_groups(settings["groups"])
-        
+
     if "companies" in settings:
         imdb_query["companies"] = get_companies(settings["companies"])
-        
+
     boxoffice_gross_us = ['','']
     if "boxoffice_gross_us_low" in settings:
         boxoffice_gross_us[0] = settings["boxoffice_gross_us_low"]
     if "boxoffice_gross_us_high" in settings:
         boxoffice_gross_us[1] = settings["boxoffice_gross_us_high"]
     imdb_query["boxoffice_gross_us"] = '%s,%s' % (boxoffice_gross_us[0],boxoffice_gross_us[1])
-    
+
     if "sort" in settings:
         imdb_query["sort"] = get_sort(settings["sort"])
-        
+
     if "certificates" in settings:
         imdb_query["certificates"] = get_certificates(settings["certificates"])
-        
+
     if "countries" in settings:
         imdb_query["countries"] = get_countries(settings["countries"])
 
     if "languages" in settings:
         imdb_query["languages"] = get_languages(settings["languages"])
-        
+
     moviemeter = ['','']
     if "moviemeter_low" in settings:
         moviemeter[0] = settings["moviemeter_low"]
     if "moviemeter_high" in settings:
         moviemeter[1] = settings["moviemeter_high"]
     imdb_query["moviemeter"] = '%s,%s' % (moviemeter[0],moviemeter[1])
-    
+
     if "production_status" in settings:
         imdb_query["production_status"] = get_production_status(settings["production_status"])
-    
+
     runtime = ['','']
     if "runtime_start" in settings:
         runtime[0] = settings["runtime_low"]
@@ -949,16 +952,16 @@ def get_url(settings):
 
     if "crew" in settings:
         imdb_query["role"] = settings["crew"]
-    
+
     if "plot" in settings:
         imdb_query["plot"] = settings["plot"]
-        
+
     if "keywords" in settings:
         imdb_query["keywords"] = settings["keywords"]
-        
+
     if "locations" in settings:
         imdb_query["locations"] = settings["locations"]
-        
+
     if "start" in settings:
         imdb_query["start"] = settings["start"]
 
@@ -985,40 +988,47 @@ def get_videos(settings):
     r = requests.get(url)
     html = r.text
     html = HTMLParser.HTMLParser().unescape(html)
-    
-    items = html.split('<tr class="')
+
+    items = html.split('<div class="lister-item ')
     videos = []
     for item in items:
-        
-        if not re.search(r'^.*?detailed"',item):
+
+        if not re.search(r'^mode-advanced">',item):
             continue
-        
+
+        #loadlate="http://ia.media-imdb.com/images/M/MV5BMjIyMTg5MTg4OV5BMl5BanBnXkFtZTgwMzkzMjY5NzE@._V1_UX67_CR0,0,67,98_AL_.jpg"
         img_url = ''
-        img_match = re.search(r'<img src="(.*?)"', item)
+        img_match = re.search(r'<img.*?loadlate="(.*?)"', item, flags=(re.DOTALL | re.MULTILINE))
         if img_match:
             img = img_match.group(1)
-            img_url = re.sub(r'S[XY].*_.jpg','SX344_.jpg',img) #NOTE 344 is Confluence List View width
+            img_url = re.sub(r'U[XY].*_.jpg','SX344_.jpg',img) #NOTE 344 is Confluence List View width
 
         title = ''
         imdbID = ''
         year = ''
-        title_match = re.search(r'<td class="title">.*?<a href="/title/(.+?)/">(.*?)</a>', item, flags=(re.DOTALL | re.MULTILINE))
+        #<a href="/title/tt1985949/?ref_=adv_li_tt"\n>Angry Birds</a>
+        title_match = re.search(r'<a href="/title/(tt[0-9]*)/\?ref_=adv_li_tt".>(.*?)</a>', item, flags=(re.DOTALL | re.MULTILINE))
         if title_match:
             imdbID = title_match.group(1)
             title = title_match.group(2)
 
-        title_match = re.search(r'<a href="/title/(.+?)/" title="(.+?) \((.+?)\)"', item, flags=(re.DOTALL | re.MULTILINE))
+        #<span class="lister-item-year text-muted unbold">(2016)</span>
+        title_match = re.search(r'<span class="lister-item-year text-muted unbold">.*?\(([0-9]*?)\)<\/span>', item, flags=(re.DOTALL | re.MULTILINE))
         if title_match:
-            year = title_match.group(3)
+            year = title_match.group(1)
 
+
+        #Episode:</small>\n    <a href="/title/tt4480392/?ref_=adv_li_tt"\n>\'Cue Detective</a>\n    <span class="lister-item-year text-muted unbold">(2015)</span>
+        #Episode:</small>\n    <a href="/title/tt4952864/?ref_=adv_li_tt"\n>#TeamLucifer</a>\n    <span class="lister-item-year text-muted unbold">(2016)</span
         episode = ''
         episode_id = ''
-        episode_match = re.search(r'<span class="episode">Episode: <a href="/title/(.+?)/">(.+?)</a>(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        episode_match = re.search(r'Episode:</small>\n    <a href="/title/(tt.*?)/?ref_=adv_li_tt"\n>(.*?)</a>\n    <span class="lister-item-year text-muted unbold">\((.*?)\)</span>', item, flags=(re.DOTALL | re.MULTILINE))
         if episode_match:
             episode_id = episode_match.group(1)
-            episode = "%s%s" % (episode_match.group(2), episode_match.group(3))
-            year = episode_match.group(3).strip('() ')
-            
+            episode = "%s (%s)" % (episode_match.group(2), episode_match.group(3))
+            year = episode_match.group(3)
+
+        #Users rated this 6.1/10 (65,165 votes)
         rating = ''
         votes = ''
         rating_match = re.search(r'title="Users rated this (.+?)/10 \((.+?) votes\)', item, flags=(re.DOTALL | re.MULTILINE))
@@ -1026,45 +1036,51 @@ def get_videos(settings):
             rating = rating_match.group(1)
             votes = rating_match.group(2)
             votes = re.sub(',','',votes)
-            
+
+        #<p class="text-muted">\nRusty Griswold takes his own family on a road trip to "Walley World" in order to spice things up with his wife and reconnect with his sons.</p>
         plot = ''
-        plot_match = re.search(r'<span class="outline">(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        plot_match = re.search(r'<p class="text-muted">(.+?)</p>', item, flags=(re.DOTALL | re.MULTILINE))
         if plot_match:
-            plot = plot_match.group(1)
-            
+            plot = plot_match.group(1).strip()
+
+        #Stars:\n<a href="/name/nm0255124/?ref_=adv_li_st_0"\n>Tom Ellis</a>, \n<a href="/name/nm0314514/?ref_=adv_li_st_1"\n>Lauren German</a>, \n<a href="/name/nm1204760/?ref_=adv_li_st_2"\n>Kevin Alejandro</a>, \n<a href="/name/nm0940851/?ref_=adv_li_st_3"\n>D.B. Woodside</a>\n    </p>
         cast = []
-        cast_match = re.search(r'<span class="credit">(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        cast_match = re.search(r'<p class="">(.*?)</p>', item, flags=(re.DOTALL | re.MULTILINE))
         if cast_match:
             cast = cast_match.group(1)
-            cast_list = re.findall(r'<a.+?>(.+?)</a>', cast)
+            cast_list = re.findall(r'<a.+?>(.+?)</a>', cast, flags=(re.DOTALL | re.MULTILINE))
             cast = cast_list
-                
+
+
+        #<span class="genre">\nAdventure, Comedy            </span>
         genres = ''
         genre_match = re.search(r'<span class="genre">(.+?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
         if genre_match:
-            genre = genre_match.group(1)
-            genre_list = re.findall(r'<a.+?>(.+?)</a>', genre)
-            genres = ",".join(genre_list)
-                
+            genres = genre_match.group(1).strip()
+            #genre_list = re.findall(r'<a.+?>(.+?)</a>', genre)
+            #genres = ",".join(genre_list)
+
+        #class="runtime">99 min</span>
         runtime = ''
-        runtime_match = re.search(r'<span class="runtime">(.+?) mins\.</span>', item, flags=(re.DOTALL | re.MULTILINE))
+        runtime_match = re.search(r'class="runtime">(.+?) min</span>', item, flags=(re.DOTALL | re.MULTILINE))
         if runtime_match:
             runtime = int(runtime_match.group(1)) * 60
-                
-        sort = ''
-        sort_match = re.search(r'<span class="sort"><span title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
-        if sort_match:
-            sort = sort_match.group(1)
 
+        sort = ''
+        #sort_match = re.search(r'<span class="sort"><span title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
+        #if sort_match:
+        #    sort = sort_match.group(1)
+
+        #<span class="certificate">PG</span>
         certificate = ''
-        certificate_match = re.search(r'<span class="certificate">.*?title="(.+?)"', item, flags=(re.DOTALL | re.MULTILINE))
+        certificate_match = re.search(r'<span class="certificate">(.*?)</span>', item, flags=(re.DOTALL | re.MULTILINE))
         if certificate_match:
             certificate = certificate_match.group(1)
-            
+
         if imdbID:
             id = imdbID
             title_type = get_title_type(params["title_type"])
-            if title_type == "tv_series" or title_type == "mini_series": 
+            if title_type == "tv_series" or title_type == "mini_series":
                 meta_url = "plugin://plugin.video.meta/tv/search_term/%s/1" % urllib.quote_plus(title.encode("utf8"))
             elif title_type == "tv_episode":
                 vlabel = "%s - %s" % (title, episode)
@@ -1078,14 +1094,15 @@ def get_videos(settings):
             'video':meta_url,'episode_id':episode_id,'imdb_id':imdbID,
             'code': id,'year':year,'mediatype':'movie','rating':rating,'plot':plot,
             'sort':sort,'cast':cast,'runtime':runtime,'votes':votes, 'certificate':certificate})
-            
-    pagination_match = re.search(r'<span class="pagination">.*<a href="(.+?)">Next', html, flags=(re.DOTALL | re.MULTILINE))
+
+    #href="?count=100&sort=moviemeter,asc&production_status=released&languages=en&release_date=2015,2016&user_rating=6.0,10.0&start=1&num_votes=100,&title_type=feature&page=2&ref_=adv_nxt"
+    pagination_match = re.search(r'href="(.*?&ref_=adv_nxt)"', html, flags=(re.DOTALL | re.MULTILINE))
     if pagination_match:
         params["start"] = str(int(params["start"]) + int(params["count"]))
         params["more"] = "true"
-        
+
     return (videos,params)
-    
+
 def get_tvdb_id(imdb_id):
     tvdb_url = "http://thetvdb.com//api/GetSeriesByRemoteID.php?imdbid=%s" % imdb_id
     r = requests.get(tvdb_url)
@@ -1106,19 +1123,19 @@ def find_episode(imdb_id,episode_id,title):
     episode_html = HTMLParser.HTMLParser().unescape(episode_html)
     season = ''
     episode = ''
-    season_match = re.search(r'<div class="bp_heading">Season ([0-9]*?) <span class="ghost">\|</span> Episode ([0-9]*?)</div>', 
+    season_match = re.search(r'<div class="bp_heading">Season ([0-9]*?) <span class="ghost">\|</span> Episode ([0-9]*?)</div>',
     episode_html, flags=(re.DOTALL | re.MULTILINE))
     if season_match:
         season = season_match.group(1)
         episode = season_match.group(2)
-        
+
     meta_url = "plugin://plugin.video.meta/tv/play/%s/%s/%s/%s" % (tvdb_id,season,episode,'select')
     list_item = xbmcgui.ListItem(label=title)
     list_item.setPath(meta_url)
     list_item.setProperty("IsPlayable", "true")
     list_item.setInfo(type='Video', infoLabels={'Title': title})
     xbmcplugin.setResolvedUrl(_handle, True, listitem=list_item)
-    
+
 
 def list_searches():
     (settings, settings_url) = get_settings_url()
@@ -1154,7 +1171,7 @@ def list_searches():
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
     xbmcplugin.endOfDirectory(_handle)
-    
+
 def get_settings_url():
     settings = {}
     setting_keys = [
@@ -1197,10 +1214,8 @@ def get_settings_url():
             settings[setting] = 'NULL'
     settings_url = urllib.urlencode(settings)
     return (settings, settings_url)
-    
-def log(var):
-    xbmc.log(re.sub(',',',\n',repr(var)))
-    
+
+
 def list_categories(settings_url):
     params = dict(parse_qsl(settings_url))
 
@@ -1216,7 +1231,7 @@ def list_categories(settings_url):
         list_item = xbmcgui.ListItem(label=name)
         context_items = []
         context_items.append(('Information', 'XBMC.Action(Info)'))
-        context_items.append(('Reload Settings From Favourite', 
+        context_items.append(('Reload Settings From Favourite',
         "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&settings=%s)" % (urllib.quote_plus(settings_url))))
         list_item.addContextMenuItems(context_items,replaceItems=False)
         genre_icon = get_genre_icon(category)
@@ -1236,16 +1251,16 @@ def list_categories(settings_url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def list_videos(settings_url): 
+def list_videos(settings_url):
     params = dict(parse_qsl(settings_url))
 
-    (videos, params) = get_videos(params) 
+    (videos, params) = get_videos(params)
     title_type = get_title_type(params["title_type"])
     type = ''
     content = ''
     info_type = ''
     trakt_type = ''
-    if title_type == "tv_series" or title_type == "mini_series": 
+    if title_type == "tv_series" or title_type == "mini_series":
         trakt_type = 'shows'
         info_type = 'extendedtvinfo'
         content = 'tvshows'
@@ -1277,7 +1292,7 @@ def list_videos(settings_url):
         else:
             vlabel = video['name']
         list_item = xbmcgui.ListItem(label=vlabel)
-        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'], 
+        list_item.setInfo('video', {'title': vlabel, 'genre': video['genre'],'code': video['code'],
         'year':video['year'],'mediatype':'movie','rating':video['rating'],'plot': video['plot'],
         'mpaa': video['certificate'],'cast': video['cast'],'duration': video['runtime'], 'votes': video['votes']})
         list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb'], 'fanart': get_background()})
@@ -1287,13 +1302,13 @@ def list_videos(settings_url):
         context_items.append(('Information', 'XBMC.Action(Info)'))
         if info_type:
             context_items.append(('Extended Info', "XBMC.RunScript(script.extendedinfo,info=%s,imdb_id=%s)" % (info_type,video['code'])))
-        context_items.append(('Reload Settings From Favourite', 
-        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&settings=%s)" % 
-        (urllib.quote_plus(settings_url))))            
+        context_items.append(('Reload Settings From Favourite',
+        "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite_settings&settings=%s)" %
+        (urllib.quote_plus(settings_url))))
         if type == 'movies' or type == 'tv' or type == 'episode':
             if __settings__.getSetting('trakt') == 'true':
-                context_items.append(('Add to Trakt Watchlist', 
-                "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" % 
+                context_items.append(('Add to Trakt Watchlist',
+                "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=addtotraktwatchlist&type=%s&imdb_id=%s&title=%s)" %
                 (trakt_type, video['code'], urllib.quote_plus(vlabel.encode("utf8")))))
         if type == 'movies' or type == 'tv':
             run_str = "plugin://plugin.video.imdbsearch/?action=library&type=%s&imdb_id=%s" % (type,video['code'])
@@ -1314,7 +1329,7 @@ def list_videos(settings_url):
         if __settings__.getSetting('default_context_menu') == 'true':
             list_item.addContextMenuItems(context_items,replaceItems=False)
         else:
-            context_items.append(('Add to Favourites', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite&name=%s&thumb=%s&cmd=%s)" % 
+            context_items.append(('Add to Favourites', "XBMC.RunPlugin(plugin://plugin.video.imdbsearch/?action=favourite&name=%s&thumb=%s&cmd=%s)" %
             (urllib.quote_plus(video['name'].encode("utf8")),urllib.quote_plus(video['thumb']),urllib.quote_plus(video['video']))))
             list_item.addContextMenuItems(context_items,replaceItems=True)
         video_streaminfo = {'codec': 'h264'}
@@ -1323,8 +1338,8 @@ def list_videos(settings_url):
         video_streaminfo['height'] = 720
         list_item.addStreamInfo('video', video_streaminfo)
         list_item.addStreamInfo('audio', {'codec': 'aac', 'language': 'en', 'channels': 2})
-        if title_type == "game": 
-            here_url = "%s%s" % (sys.argv[0],sys.argv[2]) #TODO 
+        if title_type == "game":
+            here_url = "%s%s" % (sys.argv[0],sys.argv[2]) #TODO
             listing.append((here_url, list_item, is_folder))
         else:
             listing.append((video['video'], list_item, is_folder))
@@ -1397,7 +1412,7 @@ def add_to_trakt_watchlist(type,imdb_id,title):
         })
         dialog = xbmcgui.Dialog()
         dialog.notification("Trakt: add to watchlist",title)
-    
+
 def find_crew(name=''):
     dialog = xbmcgui.Dialog()
     if not name:
@@ -1454,7 +1469,7 @@ def find_keywords(keyword=''):
     if 'keyword_exact' in json:
         pop = json['keyword_exact']
         for p in pop:
-            keywords.append((p['description'],p['keyword']))    
+            keywords.append((p['description'],p['keyword']))
     if 'keyword_approx' in json:
         approx = json['keyword_approx']
         for p in approx:
@@ -1471,13 +1486,13 @@ def find_keywords(keyword=''):
     else:
         dialog.notification('IMDB:','Nothing Found!')
 
-        
+
 def favourite(name,thumb,cmd):
     result = loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Favourites.AddFavourite", "params": {"title":"%s", "type":"media", "path":"%s", "thumbnail":"%s"}, "id": 1}' % (name, cmd, thumb)))
 
 def repad(data):
      return data + "=" * (-len(data)%4)
-    
+
 def router(paramstring):
     params = dict(parse_qsl(paramstring))
     type = ''
@@ -1504,14 +1519,14 @@ def router(paramstring):
         episode_id = params['episode_id']
     if 'title' in params.keys():
         titleq = params['title']
-        title = urllib.unquote_plus(titleq)   
+        title = urllib.unquote_plus(titleq)
     if 'action' in params:
         if params['action'] == 'find_keywords':
             find_keywords()
         elif params['action'] == 'find_crew':
             find_crew()
         elif params['action'] == 'meta_settings':
-            xbmcaddon.Addon(id='plugin.video.meta').openSettings()        
+            xbmcaddon.Addon(id='plugin.video.meta').openSettings()
         elif params['action'] == 'library':
             if type == 'tv':
                 id = get_tvdb_id(imdb_id)
