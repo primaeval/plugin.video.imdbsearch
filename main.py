@@ -23,6 +23,11 @@ else:
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
+if __settings__.getSetting('english') == 'true':
+    headers={'Accept-Language' : 'en',"X-Forwarded-For": "8.8.8.8"}
+else:
+    headers={}
+
 def log(x):
     xbmc.log(repr(x))
 
@@ -985,7 +990,7 @@ def get_videos(settings):
     (url, params) = get_url(settings)
     params["more"] = "false"
 
-    r = requests.get(url)
+    r = requests.get(url, headers=headers)
     html = r.text
     html = HTMLParser.HTMLParser().unescape(html)
 
@@ -1118,7 +1123,7 @@ def find_episode(imdb_id,episode_id,title):
 
     server = get_server(__settings__.getSetting( "server" ))
     episode_url = "http://%s.imdb.com/title/%s" % (server,episode_id)
-    r = requests.get(episode_url)
+    r = requests.get(episode_url, headers=headers)
     episode_html = r.text
     episode_html = HTMLParser.HTMLParser().unescape(episode_html)
     season = ''
