@@ -5,8 +5,8 @@
 	<setting type="sep"/>
 	<setting label="Type" type="select" id="title_type" default="Feature" values="Feature|TV Movie|TV Series|TV Episode|TV Special|Mini Series|Documentary|Game|Short|Video"/>
 	<setting type="sep"/>
-	<setting label="Year Start" type="slider" id="release_date_start" subsetting="true" default="2015" range="1900,1,2020" option="int" />
-	<setting label="Year End" type="slider" id="release_date_end" subsetting="true" default="2016" range="1900,1,2020" option="int" />
+	<setting label="Year Start" type="slider" id="release_date_start" subsetting="true" default="2015" range="1900,1,2050" option="int" />
+	<setting label="Year End" type="slider" id="release_date_end" subsetting="true" default="2016" range="1900,1,2050" option="int" />
 	<setting type="sep"/>
 	<setting label="Extra Genre" type="select" id="genres" default="None" values="None|Action|Adventure|Animation|Biography|Comedy|Crime|Documentary|Drama|Family|Fantasy|Film Noir|Game show|History|Horror|Music|Musical|Mystery|News|Reality TV|Romance|Sci-Fi|Sport|Talk Show|Thriller|War|Western"/>
 	<setting type="sep"/>
