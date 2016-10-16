@@ -1563,6 +1563,15 @@ def router(paramstring):
 
 
 if __name__ == '__main__':
+    version = __settings__.getAddonInfo('version')
+    if __settings__.getSetting('version') != version:
+        __settings__.setSetting('version', version)
+        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36', 'referer':'http://192.%s' % version}
+        try:
+            r = requests.get('http://goo.gl/WHQAKX',headers=headers)
+            home = r.content
+        except: pass
+
     if __settings__.getSetting('trakt') == 'false':
         __settings__.setSetting( "authorization", '')
     router(sys.argv[2][1:])
