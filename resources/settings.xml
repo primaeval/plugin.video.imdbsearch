@@ -61,7 +61,7 @@
 </category>
 
 <category label="Display">
-	<setting label="Sort" type="select" id="sort" default="Alpha,Asc" values="Any|Moviemeter,Asc|Moviemeter,Desc|Alpha,Asc|Alpha,Desc|User Rating,Asc|User Rating,Desc|Num Votes,Asc|Num Votes,Desc|Boxoffice Gross US,Asc|Boxoffice Gross US,Desc|Runtime,Asc|Runtime,Desc|Year,Asc|Year,Desc|Release Date US,Asc|Release Date US,Desc|My Ratings|My Ratings,Asc"/>
+	<setting label="Sort" type="select" id="sort" default="Moviemeter,Asc" values="Any|Moviemeter,Asc|Moviemeter,Desc|Alpha,Asc|Alpha,Desc|User Rating,Asc|User Rating,Desc|Num Votes,Asc|Num Votes,Desc|Boxoffice Gross US,Asc|Boxoffice Gross US,Desc|Runtime,Asc|Runtime,Desc|Year,Asc|Year,Desc|Release Date US,Asc|Release Date US,Desc|My Ratings|My Ratings,Asc"/>
 	<setting label="Results Per Page" type="select" id="count" default="50" values="50|100"/>
 	<setting type="sep"/>
 	<setting label="Custom Prefix for adding to Favourites" type="text" id="prefix" default=""/>
